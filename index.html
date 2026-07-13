@@ -740,7 +740,7 @@ function renderMenuNote(id, qty){
   if (qty === 0){ el.innerHTML = ''; delete el.dataset.rendered; return; }
   if (el.dataset.rendered === '1') return;
   el.dataset.rendered = '1';
-  el.innerHTML = `<input type="text" value="${esc(cartNotes[id]||'')}" placeholder="¿Quieres quitarle algo? Ej. sin cebolla" class="w-full mt-2 rounded-lg px-2 py-1.5 text-xs surface" style="color:var(--text);" oninput="updateCartNote('${id}', this.value)">`;
+  el.innerHTML = `<input type="text" value="${esc(cartNotes[id]||'')}" placeholder="Escribe aquí si deseas quitarle algo. Ej: sin cebolla" class="w-full mt-2 rounded-lg px-3 py-2.5 text-sm surface" style="color:var(--text);" oninput="updateCartNote('${id}', this.value)">`;
 }
 
 function addItem(id){
@@ -853,7 +853,7 @@ function renderCart(){
           <button onclick="trashCartItem('${id}')" class="text-red-400 text-base">🗑️</button>
         </div>
       </div>
-      <input type="text" value="${esc(cartNotes[id]||'')}" placeholder="¿Quieres quitarle algo? Ej. sin cebolla" class="w-full mt-1.5 rounded-lg px-2 py-1.5 text-xs surface" style="color:var(--text);" oninput="updateCartNote('${id}', this.value)">
+      <input type="text" value="${esc(cartNotes[id]||'')}" placeholder="Escribe aquí si deseas quitarle algo. Ej: sin cebolla" class="w-full mt-1.5 rounded-lg px-3 py-2.5 text-sm surface" style="color:var(--text);" oninput="updateCartNote('${id}', this.value)">
     </div>`;
   }).join('');
 
