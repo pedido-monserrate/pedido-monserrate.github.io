@@ -472,6 +472,7 @@ const DAY_LABELS = ['Dom','Lun','Mar','Mié','Jue','Vie','Sáb'];
 let CONFIG = JSON.parse(JSON.stringify(DEFAULT_CONFIG));
 let MENU = JSON.parse(JSON.stringify(DEFAULT_MENU));
 let cart = {};
+let cartNotes = {};
 let deliveryType = 'delivery';
 let selectedPaymentId = null;
 let DRAFT = null;
@@ -726,11 +727,12 @@ function addItem(id){ cart[id] = (cart[id]||0) + 1; renderControl(id); updateCar
 function removeItem(id){
   if (!cart[id]) return;
   cart[id] -= 1;
-  if (cart[id] <= 0) delete cart[id];
+  if (cart[id] <= 0){ delete cart[id]; delete cartNotes[id]; }
   renderControl(id);
   updateCartBar();
 }
-function trashCartItem(id){ delete cart[id]; renderControl(id); updateCartBar(); renderCart(); }
+function trashCartItem(id){ delete cart[id]; delete cartNotes[id]; renderControl(id); updateCartBar(); renderCart(); }
+function updateCartNote(id, value){ cartNotes[id] = value; }
 function cartCount(){ return Object.values(cart).reduce((a,b)=>a+b,0); }
 function cartSubtotal(){ return Object.entries(cart).reduce((s,[id,qty]) => { const it = findItem(id); return it ? s + it.price*qty : s; }, 0); }
 
@@ -814,15 +816,18 @@ function renderCart(){
   lines.innerHTML = entries.map(([id,qty]) => {
     const item = findItem(id);
     if (!item) return '';
-    return `<div class="flex items-center justify-between text-sm py-2" style="border-bottom:1px solid var(--border);">
-      <div class="min-w-0">
-        <div class="font-medium truncate">${item.emoji||'🍽️'} ${qty}x ${esc(item.name)}</div>
-        <div class="text-xs muted">${fmt(item.price)} c/u</div>
+    return `<div class="py-2" style="border-bottom:1px solid var(--border);">
+      <div class="flex items-center justify-between text-sm">
+        <div class="min-w-0">
+          <div class="font-medium truncate">${item.emoji||'🍽️'} ${qty}x ${esc(item.name)}</div>
+          <div class="text-xs muted">${fmt(item.price)} c/u</div>
+        </div>
+        <div class="flex items-center gap-3 flex-shrink-0">
+          <span class="font-bold">${fmt(item.price*qty)}</span>
+          <button onclick="trashCartItem('${id}')" class="text-red-400 text-base">🗑️</button>
+        </div>
       </div>
-      <div class="flex items-center gap-3 flex-shrink-0">
-        <span class="font-bold">${fmt(item.price*qty)}</span>
-        <button onclick="trashCartItem('${id}')" class="text-red-400 text-base">🗑️</button>
-      </div>
+      <input type="text" value="${esc(cartNotes[id]||'')}" placeholder="Nota (ej. sin cebolla)" class="w-full mt-1.5 rounded-lg px-2 py-1.5 text-xs surface" style="color:var(--text);" oninput="updateCartNote('${id}', this.value)">
     </div>`;
   }).join('');
 
@@ -865,7 +870,9 @@ function sendOrderToWhatsApp(){
   const divider = '━━━━━━━━━━━━━━';
   const itemLines = entries.map(([id,qty]) => {
     const item = findItem(id);
-    return item ? `• ${qty} × ${item.name} — ${fmt(item.price*qty)}` : '';
+    if (!item) return '';
+    const note = (cartNotes[id]||'').trim();
+    return `• ${qty} × ${item.name} — ${fmt(item.price*qty)}` + (note ? `\n   Nota: ${note}` : '');
   }).filter(Boolean).join('\n');
   const paymentLines = (!method || method.isCash)
     ? `💳 Pago: Contra entrega`
@@ -1011,6 +1018,7 @@ function admFactoryReset(){
   CONFIG = JSON.parse(JSON.stringify(DEFAULT_CONFIG));
   MENU = JSON.parse(JSON.stringify(DEFAULT_MENU));
   cart = {};
+  cartNotes = {};
   closeModal('admin-modal');
   renderAll();
 }
@@ -1236,6 +1244,7 @@ async function saveAdmin(){
   CONFIG = JSON.parse(JSON.stringify(DRAFT.config));
   MENU = JSON.parse(JSON.stringify(DRAFT.menu));
   cart = {};
+  cartNotes = {};
   renderAll();
 
   if (firebaseEnabled){
