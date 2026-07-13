@@ -696,6 +696,7 @@ function renderMenu(){
             <div class="font-bold brand-text">${fmt(item.price)}</div>
             <div id="mctrl-${item.id}"></div>
           </div>
+          <div id="mnote-${item.id}"></div>
         </div>
       `;
       section.appendChild(row);
@@ -730,6 +731,16 @@ function renderControl(id){
         <button onclick="addItem('${id}')" class="w-7 h-7 rounded-full font-bold brand-bg text-white">+</button>
       </div>`;
   }
+  renderMenuNote(id, qty);
+}
+
+function renderMenuNote(id, qty){
+  const el = document.getElementById('mnote-'+id);
+  if (!el) return;
+  if (qty === 0){ el.innerHTML = ''; delete el.dataset.rendered; return; }
+  if (el.dataset.rendered === '1') return;
+  el.dataset.rendered = '1';
+  el.innerHTML = `<input type="text" value="${esc(cartNotes[id]||'')}" placeholder="¿Quieres quitarle algo? Ej. sin cebolla" class="w-full mt-2 rounded-lg px-2 py-1.5 text-xs surface" style="color:var(--text);" oninput="updateCartNote('${id}', this.value)">`;
 }
 
 function addItem(id){
