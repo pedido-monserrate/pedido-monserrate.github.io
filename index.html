@@ -190,6 +190,8 @@
       <div id="cf-address-wrap" class="mb-3">
         <label class="text-xs font-semibold muted block mb-1">Dirección de entrega</label>
         <input id="cf-address" type="text" placeholder="Calle, casa/apto, referencia" class="w-full rounded-xl px-3 py-2 text-sm surface" style="color:var(--text);">
+        <button type="button" id="cf-location-btn" onclick="shareDeliveryLocation()" class="w-full mt-2 text-xs font-bold brand-text border-2 brand-border rounded-xl py-2 flex items-center justify-center gap-1.5">📍 Compartir mi ubicación exacta (opcional)</button>
+        <p class="text-[10.5px] muted mt-1.5">Ayuda al domiciliario a llegar directo a tu casa. También puedes enviarnos una foto de la fachada por este mismo chat de WhatsApp.</p>
       </div>
 
       <div class="mb-3">
@@ -414,7 +416,7 @@ const DEFAULT_CONFIG = {
   kidsMenuBannerImage: "https://i.postimg.cc/hvrQ7mX8/banner-kids.png",
   paymentMethods: [
     { id: "efectivo", label: "Efectivo", number: "", note: "", isCash: true },
-    { id: "nequi", label: "Nequi", number: "300414620", note: "", image: "https://i.postimg.cc/LYndzDgj/NEQUI-LOGO.jpg" },
+    { id: "llave", label: "Llave Bancolombia", number: "@monserrate", note: "Monserrate - Nora Alba Gaviria", image: "" },
     { id: "bancolombia", label: "Bancolombia", number: "88182057813", note: "Cuenta de ahorros - Nora Gaviria", image: "https://i.postimg.cc/1z0jM8cG/Bancolobia.png" }
   ],
   agencyName: "",
@@ -521,6 +523,7 @@ let MENU = JSON.parse(JSON.stringify(DEFAULT_MENU));
 let cart = {};
 let cartNotes = {};
 let cartJalapeno = {};
+let deliveryLocationUrl = null;
 let deliveryType = 'delivery';
 let selectedPaymentId = null;
 let DRAFT = null;
@@ -865,6 +868,22 @@ function applyDeliveryUI(){
   document.getElementById('dt-pickup').classList.toggle('dt-active', deliveryType==='pickup');
   document.getElementById('cf-address-wrap').style.display = deliveryType === 'delivery' ? 'block' : 'none';
 }
+function shareDeliveryLocation(){
+  const btn = document.getElementById('cf-location-btn');
+  if (!navigator.geolocation){ alert('Tu navegador no permite compartir ubicación. Puedes describir bien la dirección en el campo de arriba.'); return; }
+  btn.textContent = '📍 Obteniendo tu ubicación...';
+  navigator.geolocation.getCurrentPosition(
+    pos => {
+      const { latitude, longitude } = pos.coords;
+      deliveryLocationUrl = `https://www.google.com/maps?q=${latitude},${longitude}`;
+      btn.textContent = '✅ Ubicación agregada';
+    },
+    () => {
+      btn.textContent = '📍 Compartir mi ubicación exacta (opcional)';
+      alert('No pudimos obtener tu ubicación. Revisa que le hayas dado permiso al navegador, o describe bien la dirección arriba.');
+    }
+  );
+}
 function selectDeliveryType(type){
   deliveryType = type;
   applyDeliveryUI();
@@ -873,8 +892,8 @@ function selectDeliveryType(type){
 function paymentIcon(label){
   const l = (label||'').toLowerCase();
   if (l.includes('nequi')) return '💜';
-  if (l.includes('bancolombia') || l.includes('banco')) return '🏦';
   if (l.includes('llave')) return '🔑';
+  if (l.includes('bancolombia') || l.includes('banco')) return '🏦';
   if (l.includes('daviplata')) return '🔴';
   if (l.includes('tarjeta') || l.includes('card')) return '💳';
   if (l.includes('efectivo') || l.includes('cash')) return '💵';
@@ -1005,6 +1024,7 @@ function sendOrderToWhatsApp(){
     msg = `🍔 NUEVO PEDIDO DOMICILIO\n\n`;
     msg += `👤 Cliente: ${name}\n`;
     msg += `📍 Dirección: ${address}\n`;
+    if (deliveryLocationUrl) msg += `📌 Ubicación exacta: ${deliveryLocationUrl}\n`;
     msg += `${divider}\n`;
     msg += `🛒 Pedido\n${itemLines}\n`;
     msg += `${divider}\n`;
@@ -1031,6 +1051,7 @@ function sendOrderToWhatsApp(){
   cart = {};
   cartNotes = {};
   cartJalapeno = {};
+  deliveryLocationUrl = null;
   document.getElementById('cart-body').classList.add('hidden');
   document.getElementById('cart-sent').classList.remove('hidden');
   renderMenu();
