@@ -400,7 +400,7 @@ const DEFAULT_CONFIG = {
   packagingFee: 1000,
   packagingLabel: "Caja para llevar",
   adminPin: "1234",
-  ownerEmail: "",
+  ownerEmail: "monserraterecetaoriginal@gmail.com",
   ratingScore: "4.9",
   ratingCount: 1286,
   schedule: { open: "17:00", close: "00:00", closedDays: [1] },
@@ -423,8 +423,8 @@ const DEFAULT_MENU = {
   "Hamburguesas": [
     { id: "h1", name: "Clásica", desc: "Pan artesanal, carne artesanal, queso mozzarella, lechuga, cebolla caramelizada, aros de cebolla, salsa BBQ, mostaza.", price: 20000, emoji: "🍔", bg: "#3a2b12", image: "" },
     { id: "h2", name: "Clásica Doble", desc: "Pan artesanal, doble carne artesanal, queso mozzarella, huevo frito, lechuga, cebolla caramelizada, aros de cebolla, salsa BBQ, mostaza.", price: 24000, emoji: "🍔", bg: "#3a2b12", image: "" },
-    { id: "h3", name: "American Burguer", desc: "Pan artesanal, carne artesanal, tocineta ahumada, queso cheddar, lechuga, cebolla grille, salsa de tomate, mostaza, pepinillos, jalapeños picantes (opcional).", price: 21000, emoji: "🍔", bg: "#3a2b12", image: "" },
-    { id: "h4", name: "Mexicana", desc: "Pan artesanal, carne artesanal, queso mozzarella, lechuga, aguacate, pico de gallo, choclitos, salsa de ajo artesanal, salsa de mango habanero, jalapeños picantes (opcional).", price: 22000, emoji: "🍔", bg: "#3a2b12", image: "" }
+    { id: "h3", name: "American Burguer", desc: "Pan artesanal, carne artesanal, tocineta ahumada, queso cheddar, lechuga, cebolla grille, salsa de tomate, mostaza, pepinillos, jalapeños picantes (opcional).", price: 21000, emoji: "🍔", bg: "#3a2b12", image: "", hasJalapeno: true },
+    { id: "h4", name: "Mexicana", desc: "Pan artesanal, carne artesanal, queso mozzarella, lechuga, aguacate, pico de gallo, choclitos, salsa de ajo artesanal, salsa de mango habanero, jalapeños picantes (opcional).", price: 22000, emoji: "🍔", bg: "#3a2b12", image: "", hasJalapeno: true }
   ],
   "Campeón Burguer Master": [
     { id: "cb1", name: "Chapiburguer 2024", desc: "Pan artesanal, carne artesanal, tocineta ahumada, queso mozzarella, lechuga, tomate, aros de cebolla apanados, mermelada de cebolla en salsa de hervido de maracuyá, salsa de ajo artesanal, mostaza.", price: 24000, emoji: "🏆", bg: "#3a2b12", image: "" },
@@ -439,7 +439,7 @@ const DEFAULT_MENU = {
     { id: "b3", name: "Mixto", desc: "1 tortilla de maíz dorada, pollo en mostaza y tomillo, carne boloñesa, queso mozzarella, lechuga, decoración con pico de gallo y salsa de ajo artesanal. Incluye papas Crunch con salsa BBQ y salsa de ajo artesanal.", price: 22000, emoji: "🌯", bg: "#332a12", image: "" }
   ],
   "Tacos": [
-    { id: "t1", name: "Tacos de Birria", desc: "3 tortillas de maíz (importadas desde México), carne de res desmechada, queso mozzarella, decoración con cebolla y cilantro fresco, jalapeños (opcional). Incluye caldo de birria y papas Crunch con salsa BBQ y salsa de ajo artesanal.", price: 23000, emoji: "🌮", bg: "#3a2412", image: "" }
+    { id: "t1", name: "Tacos de Birria", desc: "3 tortillas de maíz (importadas desde México), carne de res desmechada, queso mozzarella, decoración con cebolla y cilantro fresco, jalapeños (opcional). Incluye caldo de birria y papas Crunch con salsa BBQ y salsa de ajo artesanal.", price: 23000, emoji: "🌮", bg: "#3a2412", image: "", hasJalapeno: true }
   ],
   "Alitas": [
     { id: "a1", name: "Salsa Teriyaki", desc: "Alitas fritas con salsa artesanal dulce a base de jengibre y soya. Elige acompañamiento: papas Crunch con salsa BBQ y salsa de ajo, o papas amarillas con queso mozzarella y salsa teriyaki.", price: 20000, emoji: "🍗", bg: "#3a2412", image: "" },
@@ -499,12 +499,12 @@ const DEFAULT_MENU = {
 // funciona en "modo demo" con guardado local en el navegador.
 // ============================================
 const FIREBASE_CONFIG = {
-  apiKey: "TU_API_KEY",
-  authDomain: "TU_PROYECTO.firebaseapp.com",
-  projectId: "TU_PROYECTO",
-  storageBucket: "TU_PROYECTO.appspot.com",
-  messagingSenderId: "TU_SENDER_ID",
-  appId: "TU_APP_ID"
+  apiKey: "AIzaSyAN7c8kBeLHszcxjaF2PNFa74ly8227_KA",
+  authDomain: "monserrate-ff3db.firebaseapp.com",
+  projectId: "monserrate-ff3db",
+  storageBucket: "monserrate-ff3db.firebasestorage.app",
+  messagingSenderId: "461913915077",
+  appId: "1:461913915077:web:78e84561721050526ebaac"
 };
 // Identificador único de este negocio dentro de tu proyecto Firebase.
 // Cámbialo por cada cliente nuevo (minúsculas, sin espacios).
@@ -518,6 +518,7 @@ let CONFIG = JSON.parse(JSON.stringify(DEFAULT_CONFIG));
 let MENU = JSON.parse(JSON.stringify(DEFAULT_MENU));
 let cart = {};
 let cartNotes = {};
+let cartJalapeno = {};
 let deliveryType = 'delivery';
 let selectedPaymentId = null;
 let DRAFT = null;
@@ -721,7 +722,7 @@ function renderMenu(){
     const kidsBanner = (cat === 'Opción Infantil' && CONFIG.kidsMenuBannerImage)
       ? `<img src="${esc(CONFIG.kidsMenuBannerImage)}" class="w-full rounded-2xl mb-3" alt="Menú infantil">`
       : '';
-    section.innerHTML = `<h3 class="text-xs uppercase tracking-wide muted font-semibold mb-2">${esc(cat)}</h3>${kidsBanner}`;
+    section.innerHTML = `<h3 class="brand-bg text-white text-xs font-bold uppercase tracking-wide px-3 py-1.5 rounded-full mb-2" style="display:inline-block;">${esc(cat)}</h3>${kidsBanner}`;
     MENU[cat].forEach(item => {
       const row = document.createElement('div');
       const soldOut = !!item.soldOut;
@@ -744,6 +745,7 @@ function renderMenu(){
             <div class="font-bold brand-text">${fmt(item.price)}</div>
             <div id="mctrl-${item.id}"></div>
           </div>
+          <div id="mjalapeno-${item.id}"></div>
           <div id="mnote-${item.id}"></div>
         </div>
       `;
@@ -783,7 +785,29 @@ function renderControl(id){
         <button onclick="addItem('${id}')" class="w-7 h-7 rounded-full font-bold brand-bg text-white">+</button>
       </div>`;
   }
+  renderJalapenoOption(id, qty);
   renderMenuNote(id, qty);
+}
+
+function renderJalapenoOption(id, qty){
+  const el = document.getElementById('mjalapeno-'+id);
+  if (!el) return;
+  const item = findItem(id);
+  if (!item || !item.hasJalapeno || qty === 0){ el.innerHTML = ''; return; }
+  if (!cartJalapeno[id]) cartJalapeno[id] = 'con';
+  const opts = [['con','Con jalapeño'], ['sin','Sin jalapeño'], ['aparte','Aparte']];
+  el.innerHTML = `
+    <div class="text-[11px] font-semibold muted mt-2 mb-1">🌶️ Jalapeño:</div>
+    <div class="flex gap-1.5">
+      ${opts.map(([val,label]) => `<button onclick="setJalapeno('${id}','${val}')" class="flex-1 text-[11px] font-semibold px-2 py-1.5 rounded-lg ${cartJalapeno[id]===val ? 'brand-bg text-white' : 'surface muted'}">${label}</button>`).join('')}
+    </div>`;
+}
+function setJalapeno(id, val){
+  cartJalapeno[id] = val;
+  renderJalapenoOption(id, cart[id]||0);
+}
+function jalapenoLabel(val){
+  return { con: 'Con jalapeño', sin: 'Sin jalapeño', aparte: 'Aparte' }[val] || '';
 }
 
 function renderMenuNote(id, qty){
@@ -805,11 +829,11 @@ function addItem(id){
 function removeItem(id){
   if (!cart[id]) return;
   cart[id] -= 1;
-  if (cart[id] <= 0){ delete cart[id]; delete cartNotes[id]; }
+  if (cart[id] <= 0){ delete cart[id]; delete cartNotes[id]; delete cartJalapeno[id]; }
   renderControl(id);
   updateCartBar();
 }
-function trashCartItem(id){ delete cart[id]; delete cartNotes[id]; renderControl(id); updateCartBar(); renderCart(); }
+function trashCartItem(id){ delete cart[id]; delete cartNotes[id]; delete cartJalapeno[id]; renderControl(id); updateCartBar(); renderCart(); }
 function updateCartNote(id, value){ cartNotes[id] = value; }
 function cartCount(){ return Object.values(cart).reduce((a,b)=>a+b,0); }
 function cartSubtotal(){ return Object.entries(cart).reduce((s,[id,qty]) => { const it = findItem(id); return it ? s + it.price*qty : s; }, 0); }
@@ -906,11 +930,13 @@ function renderCart(){
     const item = findItem(id);
     if (!item) return '';
     const note = (cartNotes[id]||'').trim();
+    const jalapeno = item.hasJalapeno ? jalapenoLabel(cartJalapeno[id]) : '';
     return `<div class="py-2" style="border-bottom:1px solid var(--border);">
       <div class="flex items-center justify-between text-sm">
         <div class="min-w-0">
           <div class="font-medium truncate">${item.emoji||'🍽️'} ${qty}x ${esc(item.name)}</div>
           <div class="text-xs muted">${fmt(item.price)} c/u</div>
+          ${jalapeno ? `<div class="text-xs mt-1 brand-text">🌶️ ${esc(jalapeno)}</div>` : ''}
           ${note ? `<div class="text-xs mt-1 brand-text">✏️ ${esc(note)}</div>` : ''}
         </div>
         <div class="flex items-center gap-3 flex-shrink-0">
@@ -962,7 +988,11 @@ function sendOrderToWhatsApp(){
     const item = findItem(id);
     if (!item) return '';
     const note = (cartNotes[id]||'').trim();
-    return `• ${qty} × ${item.name} — ${fmt(item.price*qty)}` + (note ? `\n   Nota: ${note}` : '');
+    const jalapeno = item.hasJalapeno ? jalapenoLabel(cartJalapeno[id]) : '';
+    let line = `• ${qty} × ${item.name} — ${fmt(item.price*qty)}`;
+    if (jalapeno) line += `\n   Jalapeño: ${jalapeno}`;
+    if (note) line += `\n   Nota: ${note}`;
+    return line;
   }).filter(Boolean).join('\n');
   const paymentLines = (!method || method.isCash)
     ? `💳 Pago: Contra entrega`
@@ -998,6 +1028,7 @@ function sendOrderToWhatsApp(){
 
   cart = {};
   cartNotes = {};
+  cartJalapeno = {};
   document.getElementById('cart-body').classList.add('hidden');
   document.getElementById('cart-sent').classList.remove('hidden');
   renderMenu();
@@ -1115,6 +1146,7 @@ function admFactoryReset(){
   MENU = JSON.parse(JSON.stringify(DEFAULT_MENU));
   cart = {};
   cartNotes = {};
+  cartJalapeno = {};
   closeModal('admin-modal');
   renderAll();
 }
@@ -1361,6 +1393,7 @@ async function saveAdmin(){
   MENU = JSON.parse(JSON.stringify(DRAFT.menu));
   cart = {};
   cartNotes = {};
+  cartJalapeno = {};
   renderAll();
 
   if (firebaseEnabled){
