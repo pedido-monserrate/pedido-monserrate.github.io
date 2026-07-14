@@ -222,6 +222,15 @@
         ✅ Enviar pedido por WhatsApp
       </button>
     </div>
+
+    <div id="cart-sent" class="hidden text-center py-10">
+      <div class="mx-auto w-16 h-16 rounded-full flex items-center justify-center mb-4" style="background:rgba(34,197,94,.15); border:2px solid #22c55e;">
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8 text-green-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="3"><path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/></svg>
+      </div>
+      <div class="font-display font-bold text-lg">¡Pedido enviado!</div>
+      <p class="text-xs muted mt-1">Te escribimos por WhatsApp para confirmar tu pedido.</p>
+      <button onclick="closeModal('cart-modal')" class="mt-6 w-full brand-grad text-white font-bold rounded-2xl py-3">Cerrar</button>
+    </div>
   </div>
 </div>
 
@@ -777,6 +786,7 @@ function updateCartBar(){
 // ---------- Carrito / checkout ----------
 function openCartModal(){
   openModal('cart-modal');
+  document.getElementById('cart-sent').classList.add('hidden');
   applyDeliveryUI();
   renderPaymentOptions();
   renderCart();
@@ -842,18 +852,19 @@ function renderCart(){
   lines.innerHTML = entries.map(([id,qty]) => {
     const item = findItem(id);
     if (!item) return '';
+    const note = (cartNotes[id]||'').trim();
     return `<div class="py-2" style="border-bottom:1px solid var(--border);">
       <div class="flex items-center justify-between text-sm">
         <div class="min-w-0">
           <div class="font-medium truncate">${item.emoji||'🍽️'} ${qty}x ${esc(item.name)}</div>
           <div class="text-xs muted">${fmt(item.price)} c/u</div>
+          ${note ? `<div class="text-xs mt-1 brand-text">✏️ ${esc(note)}</div>` : ''}
         </div>
         <div class="flex items-center gap-3 flex-shrink-0">
-          <span class="font-bold">${fmt(item.price*qty)}</span>
-          <button onclick="trashCartItem('${id}')" class="text-red-400 text-base">🗑️</button>
+          <span class="font-bold brand-text">${fmt(item.price*qty)}</span>
+          <button onclick="trashCartItem('${id}')" style="width:20px;height:20px;background-color:var(--brand);-webkit-mask-image:url('https://i.postimg.cc/jjnWNMCQ/eliminar-icono.png');mask-image:url('https://i.postimg.cc/jjnWNMCQ/eliminar-icono.png');-webkit-mask-size:contain;mask-size:contain;-webkit-mask-repeat:no-repeat;mask-repeat:no-repeat;-webkit-mask-position:center;mask-position:center;"></button>
         </div>
       </div>
-      <textarea rows="2" placeholder="Escribe aquí si deseas quitarle algo. Ej. sin cebolla" class="w-full mt-1.5 rounded-lg px-3 py-2.5 text-sm surface resize-none" style="color:var(--text);" oninput="updateCartNote('${id}', this.value)">${esc(cartNotes[id]||'')}</textarea>
     </div>`;
   }).join('');
 
@@ -931,6 +942,12 @@ function sendOrderToWhatsApp(){
 
   const url = `https://wa.me/${CONFIG.whatsappNumber}?text=${encodeURIComponent(msg)}`;
   window.open(url, '_blank');
+
+  cart = {};
+  cartNotes = {};
+  document.getElementById('cart-body').classList.add('hidden');
+  document.getElementById('cart-sent').classList.remove('hidden');
+  renderMenu();
 }
 
 // ---------- Horario ----------
