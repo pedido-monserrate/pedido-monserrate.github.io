@@ -833,7 +833,17 @@ function updatePaymentNote(){
   const method = findPaymentMethod(selectedPaymentId);
   if (!method || method.isCash){ note.classList.add('hidden'); note.innerHTML=''; return; }
   note.classList.remove('hidden');
-  note.innerHTML = `Pagas a <b class="text-white">${esc(method.label)}</b>: ${esc(method.number)}. ${method.note ? esc(method.note) + '. ' : ''}Envía el comprobante por el mismo chat.`;
+  note.innerHTML = `Pagas a <b class="text-white">${esc(method.label)}</b>:
+    <button type="button" onclick="copyAccountNumber(this, '${esc(method.number)}')" class="font-bold brand-text underline decoration-dotted">${esc(method.number)} 📋</button>
+    (toca el número para copiarlo). ${method.note ? esc(method.note) + '. ' : ''}Envía el comprobante por el mismo chat.`;
+}
+
+function copyAccountNumber(btn, number){
+  navigator.clipboard.writeText(number).then(() => {
+    const original = btn.textContent;
+    btn.textContent = '¡Copiado! ✅';
+    setTimeout(() => { btn.textContent = original; }, 1500);
+  });
 }
 
 function renderCart(){
