@@ -189,6 +189,8 @@
         </button>
       </div>
 
+      <button onclick="closeModal('cart-modal')" class="text-xs font-semibold brand-text mb-3 flex items-center gap-1">← Seguir agregando productos</button>
+
       <div class="text-xs font-semibold muted mb-1 uppercase tracking-wide">Mi pedido</div>
       <div id="cart-lines" class="mb-3"></div>
 
@@ -862,7 +864,7 @@ function renderCart(){
         </div>
         <div class="flex items-center gap-3 flex-shrink-0">
           <span class="font-bold brand-text">${fmt(item.price*qty)}</span>
-          <button onclick="trashCartItem('${id}')" style="width:20px;height:20px;background-color:var(--brand);-webkit-mask-image:url('https://i.postimg.cc/jjnWNMCQ/eliminar-icono.png');mask-image:url('https://i.postimg.cc/jjnWNMCQ/eliminar-icono.png');-webkit-mask-size:contain;mask-size:contain;-webkit-mask-repeat:no-repeat;mask-repeat:no-repeat;-webkit-mask-position:center;mask-position:center;"></button>
+          <button onclick="trashCartItem('${id}')" class="text-red-400 text-base">🗑️</button>
         </div>
       </div>
     </div>`;
