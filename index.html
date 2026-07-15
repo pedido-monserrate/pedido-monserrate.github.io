@@ -934,11 +934,17 @@ function renderPaymentOptions(){
   const wrap = document.getElementById('cf-payment-grid');
   const methods = CONFIG.paymentMethods && CONFIG.paymentMethods.length ? CONFIG.paymentMethods : [{id:'efectivo',label:'Efectivo',isCash:true}];
   if (!selectedPaymentId || !methods.find(m=>m.id===selectedPaymentId)) selectedPaymentId = methods[0].id;
-  wrap.innerHTML = methods.map(m => `
-    <button onclick="selectPayment('${m.id}')" class="rounded-xl p-2.5 text-center surface ${m.id===selectedPaymentId ? 'pay-active' : ''}">
+  wrap.innerHTML = methods.map(m => {
+    if (m.image && m.fullImage){
+      return `<button onclick="selectPayment('${m.id}')" class="rounded-xl text-center surface overflow-hidden aspect-square ${m.id===selectedPaymentId ? 'pay-active' : ''}">
+        <img src="${esc(m.image)}" class="w-full h-full object-cover" alt="${esc(m.label)}">
+      </button>`;
+    }
+    return `<button onclick="selectPayment('${m.id}')" class="rounded-xl p-2.5 text-center surface ${m.id===selectedPaymentId ? 'pay-active' : ''}">
       <div class="text-xl flex items-center justify-center h-6">${m.image ? `<img src="${esc(m.image)}" class="h-6 object-contain">` : paymentIcon(m.label)}</div>
       <div class="text-[10px] font-semibold mt-1 truncate">${esc(m.label)}</div>
-    </button>`).join('');
+    </button>`;
+  }).join('');
 }
 function selectPayment(id){ selectedPaymentId = id; renderPaymentOptions(); updatePaymentNote(); }
 function findPaymentMethod(id){
@@ -1331,13 +1337,20 @@ function renderAdminPayments(){
         <button onclick="admRemovePayment(${idx})" class="text-red-400 text-lg px-1">✕</button>
       </div>
       <input value="${esc(m.image||'')}" placeholder="URL del logo/ícono (opcional)" class="w-full border border-gray-200 rounded-xl px-3 py-2 text-sm" data-pidx="${idx}" data-pfield="image">
+      <label class="flex items-center gap-1.5 text-xs font-semibold text-gray-500">
+        <input type="checkbox" ${m.fullImage ? 'checked' : ''} style="width:auto;" data-pidx="${idx}" data-pboolfield="fullImage">
+        La foto ya incluye el nombre (ocupar toda la casilla, sin repetir el texto)
+      </label>
       ${m.isCash ? '' : `
       <input value="${esc(m.number)}" placeholder="Número / cuenta" class="w-full border border-gray-200 rounded-xl px-3 py-2 text-sm" data-pidx="${idx}" data-pfield="number">
       <input value="${esc(m.note||'')}" placeholder="Nota adicional (opcional)" class="w-full border border-gray-200 rounded-xl px-3 py-2 text-sm" data-pidx="${idx}" data-pfield="note">
       `}
     </div>`).join('') || '<p class="text-xs text-gray-400">Sin métodos de pago aún.</p>';
-  wrap.querySelectorAll('input').forEach(inp => {
+  wrap.querySelectorAll('input[data-pfield]').forEach(inp => {
     inp.oninput = e => { DRAFT.config.paymentMethods[Number(e.target.dataset.pidx)][e.target.dataset.pfield] = e.target.value; };
+  });
+  wrap.querySelectorAll('input[data-pboolfield]').forEach(inp => {
+    inp.onchange = e => { DRAFT.config.paymentMethods[Number(e.target.dataset.pidx)][e.target.dataset.pboolfield] = e.target.checked; };
   });
 }
 function admAddPayment(){
