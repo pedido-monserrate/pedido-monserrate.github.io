@@ -320,8 +320,8 @@
         <div class="admin-field col-span-2"><label>Foto ícono de Ubicación (URL, opcional)</label><input id="adm-maps-icon" placeholder="https://..."></div>
         <div class="admin-field col-span-2"><label>Instagram (link completo)</label><input id="adm-instagram"></div>
         <div class="admin-field col-span-2"><label>Foto ícono de Instagram (URL, opcional)</label><input id="adm-ig-icon" placeholder="https://..."></div>
-        <div class="admin-field"><label>Costo domicilio - dentro del pueblo</label><input id="adm-delivery-town" type="number" min="0" step="500"></div>
-        <div class="admin-field"><label>Costo domicilio - zona urbana</label><input id="adm-delivery-urban" type="number" min="0" step="500"></div>
+        <div class="admin-field"><label>Domicilio (zona rural)</label><input id="adm-delivery-town" type="number" min="0" step="500"></div>
+        <div class="admin-field"><label>Domicilio (zona urbana)</label><input id="adm-delivery-urban" type="number" min="0" step="500"></div>
         <div class="admin-field"><label>Símbolo de moneda</label><input id="adm-currency"></div>
         <div class="admin-field"><label>Cobro de caja/empaque (por unidad)</label><input id="adm-packaging-fee" type="number" min="0" step="100"></div>
         <div class="admin-field"><label>Nombre de ese cobro</label><input id="adm-packaging-label" placeholder="Ej. Caja para llevar"></div>
@@ -347,10 +347,14 @@
           <input id="adm-promo-enabled" type="checkbox" style="width:auto;">
           <label style="margin:0;">Mostrar banner de promo</label>
         </div>
-        <div class="admin-field col-span-2"><label>Título</label><input id="adm-promo-title" placeholder="Ej. Combo Clásico"></div>
-        <div class="admin-field col-span-2"><label>Descripción</label><input id="adm-promo-desc" placeholder="Ej. Hamburguesa + Papas + Bebida"></div>
-        <div class="admin-field"><label>Precio</label><input id="adm-promo-price" type="number" min="0" step="500"></div>
+        <div class="admin-field col-span-2"><label>Título (obligatorio para que se muestre, aunque uses foto completa)</label><input id="adm-promo-title" placeholder="Ej. Combo Clásico"></div>
+        <div class="admin-field col-span-2"><label>Descripción (opcional)</label><input id="adm-promo-desc" placeholder="Ej. Hamburguesa + Papas + Bebida"></div>
+        <div class="admin-field"><label>Precio (opcional, déjalo en 0 para no mostrarlo)</label><input id="adm-promo-price" type="number" min="0" step="500"></div>
         <div class="admin-field"><label>Foto (URL, opcional)</label><input id="adm-promo-image" placeholder="https://..."></div>
+        <div class="admin-field col-span-2 flex items-center gap-2" style="display:flex;">
+          <input id="adm-promo-fullimage" type="checkbox" style="width:auto;">
+          <label style="margin:0;">La foto ya incluye el texto (ocupar todo el banner, sin superponer título/precio)</label>
+        </div>
       </div>
 
       <div class="admin-section-title">Métodos de pago</div>
@@ -699,6 +703,10 @@ function renderPromo(){
   const p = CONFIG.promo;
   if (!p || !p.enabled || !p.title){ wrap.classList.add('hidden'); wrap.innerHTML=''; return; }
   wrap.classList.remove('hidden');
+  if (p.image && p.fullImage){
+    wrap.innerHTML = `<img src="${esc(p.image)}" class="w-full rounded-2xl" alt="${esc(p.title)}">`;
+    return;
+  }
   const bgStyle = p.image
     ? `background-image:linear-gradient(180deg, rgba(0,0,0,.25), rgba(0,0,0,.85)), url('${esc(p.image)}'); background-size:cover; background-position:center;`
     : `background:linear-gradient(135deg, #3a2410, var(--surface));`;
@@ -707,7 +715,7 @@ function renderPromo(){
       <div class="text-[11px] font-bold brand-text">🔥 PROMO DEL DÍA</div>
       <div class="font-display font-bold text-xl mt-0.5 text-white">${esc(p.title)}</div>
       ${p.desc ? `<div class="text-xs mt-0.5" style="color:rgba(255,255,255,.85);">${esc(p.desc)}</div>` : ''}
-      <div class="font-bold text-xl mt-1 brand-text">${fmt(p.price||0)}</div>
+      ${p.price ? `<div class="font-bold text-xl mt-1 brand-text">${fmt(p.price)}</div>` : ''}
     </div>`;
 }
 
@@ -885,7 +893,7 @@ function applyDeliveryUI(){
 function renderDeliveryZoneButtons(){
   const pueblo = document.getElementById('zone-pueblo');
   const urbana = document.getElementById('zone-urbana');
-  pueblo.textContent = `Dentro del pueblo (${fmt(CONFIG.deliveryFeeTown||0)})`;
+  pueblo.textContent = `Zona rural (${fmt(CONFIG.deliveryFeeTown||0)})`;
   urbana.textContent = `Zona urbana (${fmt(CONFIG.deliveryFeeUrban||0)})`;
   pueblo.classList.toggle('dt-active', deliveryZone === 'pueblo');
   urbana.classList.toggle('dt-active', deliveryZone === 'urbana');
@@ -1056,7 +1064,7 @@ async function sendOrderToWhatsApp(){
   if (!name){ alert('Por favor ingresa tu nombre.'); return; }
   if (!phone){ alert('Por favor ingresa tu teléfono.'); return; }
   if (deliveryType === 'delivery' && !address){ alert('Por favor ingresa la dirección de entrega.'); return; }
-  if (deliveryType === 'delivery' && !deliveryZone){ alert('Por favor selecciona la zona de entrega: dentro del pueblo o zona urbana.'); return; }
+  if (deliveryType === 'delivery' && !deliveryZone){ alert('Por favor selecciona la zona de entrega: zona rural o zona urbana.'); return; }
 
   const sendBtn = document.getElementById('cf-send-btn');
   sendBtn.disabled = true;
@@ -1099,7 +1107,7 @@ async function sendOrderToWhatsApp(){
     msg += `${divider}\n`;
     if (packaging > 0) msg += `🥤 ${CONFIG.packagingLabel||'Caja para llevar'}: ${cartCount()} × ${fmt(CONFIG.packagingFee||0)}\n`;
     msg += `💰 Subtotal: ${fmt(subtotal)}\n`;
-    msg += `🚚 Domicilio (${deliveryZone === 'urbana' ? 'zona urbana' : 'dentro del pueblo'}): ${fmt(fee)}\n\n`;
+    msg += `🚚 Domicilio (${deliveryZone === 'urbana' ? 'zona urbana' : 'zona rural'}): ${fmt(fee)}\n\n`;
     msg += `💵 TOTAL: ${fmt(total)}\n\n`;
     msg += `${divider}\n\n`;
     msg += `${paymentLines}\n`;
@@ -1278,6 +1286,7 @@ function renderAdminForm(){
   document.getElementById('adm-promo-title').value = c.promo.title || '';
   document.getElementById('adm-promo-desc').value = c.promo.desc || '';
   document.getElementById('adm-promo-price').value = c.promo.price || 0;
+  document.getElementById('adm-promo-fullimage').checked = !!c.promo.fullImage;
   document.getElementById('adm-promo-image').value = c.promo.image || '';
   document.getElementById('adm-kids-banner').value = c.kidsMenuBannerImage || '';
   document.getElementById('adm-agency-name').value = c.agencyName || '';
@@ -1305,6 +1314,7 @@ function renderAdminForm(){
   document.getElementById('adm-sched-open').oninput = e => { DRAFT.config.schedule.open = e.target.value; };
   document.getElementById('adm-sched-close').oninput = e => { DRAFT.config.schedule.close = e.target.value; };
   document.getElementById('adm-promo-enabled').onchange = e => { DRAFT.config.promo.enabled = e.target.checked; };
+  document.getElementById('adm-promo-fullimage').onchange = e => { DRAFT.config.promo.fullImage = e.target.checked; };
   document.getElementById('adm-promo-title').oninput = e => { DRAFT.config.promo.title = e.target.value; };
   document.getElementById('adm-promo-desc').oninput = e => { DRAFT.config.promo.desc = e.target.value; };
   document.getElementById('adm-promo-price').oninput = e => { DRAFT.config.promo.price = Number(e.target.value)||0; };
