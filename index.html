@@ -223,7 +223,7 @@
         <div class="flex justify-between font-bold text-base pt-2 mt-1" style="border-top:1px solid var(--border);"><span>Total</span><span id="cart-total">$0</span></div>
       </div>
 
-      <button onclick="sendOrderToWhatsApp()" class="w-full bg-green-500 hover:bg-green-600 text-white font-bold rounded-2xl py-3.5 flex items-center justify-center gap-2 transition">
+      <button id="cf-send-btn" onclick="sendOrderToWhatsApp()" class="w-full bg-green-500 hover:bg-green-600 text-white font-bold rounded-2xl py-3.5 flex items-center justify-center gap-2 transition">
         ✅ Enviar pedido por WhatsApp
       </button>
     </div>
@@ -936,12 +936,12 @@ function renderPaymentOptions(){
   if (!selectedPaymentId || !methods.find(m=>m.id===selectedPaymentId)) selectedPaymentId = methods[0].id;
   wrap.innerHTML = methods.map(m => {
     if (m.image && m.fullImage){
-      return `<button onclick="selectPayment('${m.id}')" class="rounded-xl text-center surface overflow-hidden aspect-square ${m.id===selectedPaymentId ? 'pay-active' : ''}">
+      return `<button onclick="selectPayment('${m.id}')" class="rounded-xl text-center surface overflow-hidden ${m.id===selectedPaymentId ? 'pay-active' : ''}" style="aspect-ratio:1/1;">
         <img src="${esc(m.image)}" class="w-full h-full object-cover" alt="${esc(m.label)}">
       </button>`;
     }
     return `<button onclick="selectPayment('${m.id}')" class="rounded-xl p-2.5 text-center surface ${m.id===selectedPaymentId ? 'pay-active' : ''}">
-      <div class="text-xl flex items-center justify-center h-6">${m.image ? `<img src="${esc(m.image)}" class="h-6 object-contain">` : paymentIcon(m.label)}</div>
+      <div class="text-xl flex items-center justify-center h-10">${m.image ? `<img src="${esc(m.image)}" class="h-10 object-contain">` : paymentIcon(m.label)}</div>
       <div class="text-[10px] font-semibold mt-1 truncate">${esc(m.label)}</div>
     </button>`;
   }).join('');
@@ -1030,7 +1030,24 @@ function updateCartTotals(){
   document.getElementById('cart-total').textContent = fmt(subtotal + packaging + fee);
 }
 
-function sendOrderToWhatsApp(){
+async function getNextOrderNumber(){
+  if (!firebaseEnabled) return null;
+  try {
+    const ref = db.collection('restaurants').doc(RESTAURANT_ID).collection('meta').doc('counters');
+    return await db.runTransaction(async tx => {
+      const snap = await tx.get(ref);
+      const current = (snap.exists && snap.data().orderNumber) || 0;
+      const next = current + 1;
+      tx.set(ref, { orderNumber: next }, { merge: true });
+      return next;
+    });
+  } catch (err){
+    console.error('No se pudo generar el número de pedido', err);
+    return null;
+  }
+}
+
+async function sendOrderToWhatsApp(){
   const name = document.getElementById('cf-name').value.trim();
   const phone = document.getElementById('cf-phone').value.trim();
   const address = document.getElementById('cf-address').value.trim();
@@ -1040,6 +1057,16 @@ function sendOrderToWhatsApp(){
   if (!phone){ alert('Por favor ingresa tu teléfono.'); return; }
   if (deliveryType === 'delivery' && !address){ alert('Por favor ingresa la dirección de entrega.'); return; }
   if (deliveryType === 'delivery' && !deliveryZone){ alert('Por favor selecciona la zona de entrega: dentro del pueblo o zona urbana.'); return; }
+
+  const sendBtn = document.getElementById('cf-send-btn');
+  sendBtn.disabled = true;
+  const originalBtnText = sendBtn.textContent;
+  sendBtn.textContent = 'Enviando...';
+  const orderNumber = await getNextOrderNumber();
+  sendBtn.disabled = false;
+  sendBtn.textContent = originalBtnText;
+
+  const orderTag = orderNumber ? `#${String(orderNumber).padStart(5,'0')} ` : '';
 
   const entries = Object.entries(cart);
   const subtotal = cartSubtotal();
@@ -1063,7 +1090,7 @@ function sendOrderToWhatsApp(){
 
   let msg;
   if (deliveryType === 'delivery'){
-    msg = `🍔 NUEVO PEDIDO DOMICILIO\n\n`;
+    msg = `🍔 NUEVO PEDIDO DOMICILIO ${orderTag}\n\n`;
     msg += `👤 Cliente: ${name}\n`;
     msg += `📍 Dirección: ${address}\n`;
     if (deliveryLocationUrl) msg += `📌 Ubicación exacta: ${deliveryLocationUrl}\n`;
@@ -1078,7 +1105,7 @@ function sendOrderToWhatsApp(){
     msg += `${paymentLines}\n`;
     msg += `📞 Teléfono:\n${phone}`;
   } else {
-    msg = `🛍️ NUEVO PEDIDO PARA RETIRAR\n\n`;
+    msg = `🛍️ NUEVO PEDIDO PARA RETIRAR ${orderTag}\n\n`;
     msg += `👤 Cliente: ${name}\n`;
     if (phone) msg += `📞 Teléfono: ${phone}\n`;
     msg += `\n🍔 Pedido\n${itemLines}\n`;
