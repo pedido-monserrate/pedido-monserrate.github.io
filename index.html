@@ -347,7 +347,7 @@
           <input id="adm-promo-enabled" type="checkbox" style="width:auto;">
           <label style="margin:0;">Mostrar banner de promo</label>
         </div>
-        <div class="admin-field col-span-2"><label>Título (obligatorio para que se muestre, aunque uses foto completa)</label><input id="adm-promo-title" placeholder="Ej. Combo Clásico"></div>
+        <div class="admin-field col-span-2"><label>Título (no hace falta si usas "foto completa")</label><input id="adm-promo-title" placeholder="Ej. Combo Clásico"></div>
         <div class="admin-field col-span-2"><label>Descripción (opcional)</label><input id="adm-promo-desc" placeholder="Ej. Hamburguesa + Papas + Bebida"></div>
         <div class="admin-field"><label>Precio (opcional, déjalo en 0 para no mostrarlo)</label><input id="adm-promo-price" type="number" min="0" step="500"></div>
         <div class="admin-field"><label>Foto (URL, opcional)</label><input id="adm-promo-image" placeholder="https://..."></div>
@@ -701,10 +701,11 @@ setInterval(() => { if (CONFIG) renderStatusBadge(); }, 60000);
 function renderPromo(){
   const wrap = document.getElementById('promo-banner');
   const p = CONFIG.promo;
-  if (!p || !p.enabled || !p.title){ wrap.classList.add('hidden'); wrap.innerHTML=''; return; }
+  const hasContent = p && p.enabled && (p.title || (p.fullImage && p.image));
+  if (!hasContent){ wrap.classList.add('hidden'); wrap.innerHTML=''; return; }
   wrap.classList.remove('hidden');
   if (p.image && p.fullImage){
-    wrap.innerHTML = `<img src="${esc(p.image)}" class="w-full rounded-2xl" alt="${esc(p.title)}">`;
+    wrap.innerHTML = `<img src="${esc(p.image)}" class="w-full rounded-2xl" alt="${esc(p.title || 'Promoción')}">`;
     return;
   }
   const bgStyle = p.image
