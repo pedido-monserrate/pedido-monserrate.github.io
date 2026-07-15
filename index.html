@@ -426,7 +426,7 @@ const DEFAULT_CONFIG = {
   kidsMenuBannerImage: "https://i.postimg.cc/hvrQ7mX8/banner-kids.png",
   paymentMethods: [
     { id: "efectivo", label: "Efectivo", number: "", note: "", isCash: true },
-    { id: "nequi", label: "Nequi", number: "300414620", note: "", image: "https://i.postimg.cc/LYndzDgj/NEQUI-LOGO.jpg" },
+    { id: "llave", label: "Llave Bancolombia", number: "@monserrate", note: "", image: "" },
     { id: "bancolombia", label: "Bancolombia", number: "88182057813", note: "Cuenta de ahorros - Nora Gaviria", image: "https://i.postimg.cc/1z0jM8cG/Bancolobia.png" }
   ],
   agencyName: "",
@@ -536,6 +536,7 @@ let cartJalapeno = {};
 let deliveryLocationUrl = '';
 let deliveryType = 'delivery';
 let deliveryZone = null;
+let cloudDataLoaded = false;
 let selectedPaymentId = null;
 let DRAFT = null;
 let db, auth;
@@ -1189,6 +1190,10 @@ function adminLogout(){
 }
 
 function openAdmin(){
+  if (firebaseEnabled && !cloudDataLoaded){
+    alert('Espera un momento, todavía estamos cargando los datos actuales de la nube (para no sobrescribir cambios recientes). Intenta de nuevo en unos segundos.');
+    return;
+  }
   DRAFT = JSON.parse(JSON.stringify({ config: CONFIG, menu: MENU }));
   DRAFT.config.schedule = DRAFT.config.schedule || { open: '10:00', close: '23:00', closedDays: [] };
   DRAFT.config.promo = DRAFT.config.promo || { enabled: false, title: '', desc: '', price: 0, image: '' };
@@ -1349,6 +1354,8 @@ function renderAdminMenu(){
   wrap.innerHTML = cats.map(cat => `
     <div class="border border-gray-100 rounded-2xl p-3" data-cat-block="${esc(cat)}">
       <div class="flex items-center gap-2 mb-2">
+        <button data-catup="${esc(cat)}" title="Mover arriba" class="text-gray-400 text-sm px-1">▲</button>
+        <button data-catdown="${esc(cat)}" title="Mover abajo" class="text-gray-400 text-sm px-1">▼</button>
         <input value="${esc(cat)}" class="flex-1 font-semibold text-sm border border-gray-200 rounded-xl px-3 py-1.5" data-catname-old="${esc(cat)}">
         <button data-catdelete="${esc(cat)}" class="text-red-400 text-sm px-1">✕ Eliminar categoría</button>
       </div>
@@ -1403,6 +1410,12 @@ function renderAdminMenu(){
   wrap.querySelectorAll('[data-catdelete]').forEach(btn => {
     btn.onclick = () => admRemoveCategory(btn.dataset.catdelete);
   });
+  wrap.querySelectorAll('[data-catup]').forEach(btn => {
+    btn.onclick = () => admMoveCategory(btn.dataset.catup, -1);
+  });
+  wrap.querySelectorAll('[data-catdown]').forEach(btn => {
+    btn.onclick = () => admMoveCategory(btn.dataset.catdown, 1);
+  });
   wrap.querySelectorAll('[data-itemdelete]').forEach(btn => {
     btn.onclick = () => { const [cat, idx] = btn.dataset.itemdelete.split('::'); admRemoveItem(cat, Number(idx)); };
   });
@@ -1431,6 +1444,17 @@ function admRenameCategory(oldName, newName){
 function admRemoveCategory(cat){
   if (!confirm(`¿Eliminar la categoría "${cat}" y todos sus productos?`)) return;
   delete DRAFT.menu[cat];
+  renderAdminMenu();
+}
+function admMoveCategory(cat, dir){
+  const keys = Object.keys(DRAFT.menu);
+  const i = keys.indexOf(cat);
+  const j = i + dir;
+  if (j < 0 || j >= keys.length) return;
+  [keys[i], keys[j]] = [keys[j], keys[i]];
+  const rebuilt = {};
+  keys.forEach(k => { rebuilt[k] = DRAFT.menu[k]; });
+  DRAFT.menu = rebuilt;
   renderAdminMenu();
 }
 function admAddItem(cat){
@@ -1475,6 +1499,7 @@ async function saveAdmin(){
 // ============================================
 if (firebaseEnabled){
   db.collection('restaurants').doc(RESTAURANT_ID).onSnapshot(doc => {
+    cloudDataLoaded = true;
     const adminOpen = !document.getElementById('admin-modal').classList.contains('hidden');
     if (adminOpen) return; // no pisar lo que el dueño está editando
     if (doc.exists){
@@ -1485,6 +1510,7 @@ if (firebaseEnabled){
     renderAll();
   }, err => {
     console.error('Firebase onSnapshot error', err);
+    cloudDataLoaded = true;
     renderAll();
   });
 } else {
