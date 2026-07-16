@@ -437,49 +437,51 @@ const DEFAULT_CONFIG = {
   agencyUrl: ""
 };
 
-const DEFAULT_MENU = {
-  "Hamburguesas": [
+// El menú se guarda como una LISTA ordenada de categorías (no un objeto):
+// las listas sí conservan el orden al guardarse y leerse desde Firestore.
+const DEFAULT_MENU = [
+  { name: "Opción Infantil", items: [
+    { id: "k1", name: "Cajita Feliz - Mini Hamburguesa", desc: "Pan artesanal, carne artesanal, queso mozzarella, ripio, salsas. Incluye papitas Crunch, juguito en caja, masmelito, salsa de tomate + juguete sorpresa (niño o niña).", price: 28000, emoji: "🍔", bg: "#332a12", image: "" },
+    { id: "k2", name: "Cajita Feliz - Nuggets de Pollo", desc: "4 nuggets de pollo con salsa BBQ dulce. Incluye papitas Crunch, juguito en caja, masmelito, salsa de tomate + juguete sorpresa (niño o niña).", price: 28000, emoji: "🍗", bg: "#332a12", image: "" }
+  ]},
+  { name: "Hamburguesas", items: [
     { id: "h1", name: "Clásica", desc: "Pan artesanal, carne artesanal, queso mozzarella, lechuga, cebolla caramelizada, aros de cebolla, salsa BBQ, mostaza.", price: 20000, emoji: "🍔", bg: "#3a2b12", image: "" },
     { id: "h2", name: "Clásica Doble", desc: "Pan artesanal, doble carne artesanal, queso mozzarella, huevo frito, lechuga, cebolla caramelizada, aros de cebolla, salsa BBQ, mostaza.", price: 24000, emoji: "🍔", bg: "#3a2b12", image: "" },
     { id: "h3", name: "American Burguer", desc: "Pan artesanal, carne artesanal, tocineta ahumada, queso cheddar, lechuga, cebolla grille, salsa de tomate, mostaza, pepinillos, jalapeños picantes (opcional).", price: 21000, emoji: "🍔", bg: "#3a2b12", image: "", hasJalapeno: true },
     { id: "h4", name: "Mexicana", desc: "Pan artesanal, carne artesanal, queso mozzarella, lechuga, aguacate, pico de gallo, choclitos, salsa de ajo artesanal, salsa de mango habanero, jalapeños picantes (opcional).", price: 22000, emoji: "🍔", bg: "#3a2b12", image: "", hasJalapeno: true }
-  ],
-  "Campeón Burguer Master": [
+  ]},
+  { name: "Campeón Burguer Master", items: [
     { id: "cb1", name: "Chapiburguer 2024", desc: "Pan artesanal, carne artesanal, tocineta ahumada, queso mozzarella, lechuga, tomate, aros de cebolla apanados, mermelada de cebolla en salsa de hervido de maracuyá, salsa de ajo artesanal, mostaza.", price: 24000, emoji: "🏆", bg: "#3a2b12", image: "" },
     { id: "cb2", name: "Golden 2025", desc: "Pan artesanal, carne artesanal rellena de hornado de cerdo, mermelada de tocineta y fresa en reducción de café, chips de arracacha, lechuga, tomate, crocantes de cojongo, salsa de tomate, mostaza, lámina de oro comestible.", price: 25000, emoji: "🏆", bg: "#3a2b12", image: "" }
-  ],
-  "Sandwich": [
+  ]},
+  { name: "Sandwich", items: [
     { id: "s1", name: "Peruano (Frío)", desc: "Pan artesanal, pollo con tomate fresco en salsa de ajo casera, queso, lechuga, aguacate.", price: 19000, emoji: "🥪", bg: "#332a12", image: "" }
-  ],
-  "Burritos": [
+  ]},
+  { name: "Burritos", items: [
     { id: "b1", name: "Pollo", desc: "1 tortilla de maíz dorada, pollo en mostaza y tomillo, queso mozzarella, lechuga, decoración con pico de gallo y salsa de ajo artesanal. Incluye papas Crunch con salsa BBQ y salsa de ajo artesanal.", price: 20000, emoji: "🌯", bg: "#332a12", image: "" },
     { id: "b2", name: "Carne", desc: "1 tortilla de maíz dorada, carne boloñesa, queso mozzarella, lechuga, decoración con pico de gallo y salsa de ajo artesanal. Incluye papas Crunch con salsa BBQ y salsa de ajo artesanal.", price: 20000, emoji: "🌯", bg: "#332a12", image: "" },
     { id: "b3", name: "Mixto", desc: "1 tortilla de maíz dorada, pollo en mostaza y tomillo, carne boloñesa, queso mozzarella, lechuga, decoración con pico de gallo y salsa de ajo artesanal. Incluye papas Crunch con salsa BBQ y salsa de ajo artesanal.", price: 22000, emoji: "🌯", bg: "#332a12", image: "" }
-  ],
-  "Tacos": [
+  ]},
+  { name: "Tacos", items: [
     { id: "t1", name: "Tacos de Birria", desc: "3 tortillas de maíz (importadas desde México), carne de res desmechada, queso mozzarella, decoración con cebolla y cilantro fresco, jalapeños (opcional). Incluye caldo de birria y papas Crunch con salsa BBQ y salsa de ajo artesanal.", price: 23000, emoji: "🌮", bg: "#3a2412", image: "", hasJalapeno: true }
-  ],
-  "Alitas": [
-    { id: "a1", name: "Salsa Teriyaki", desc: "Alitas fritas con salsa artesanal dulce a base de jengibre y soya. Elige acompañamiento: papas Crunch con salsa BBQ y salsa de ajo, o papas amarillas con queso mozzarella y salsa teriyaki.", price: 20000, emoji: "🍗", bg: "#3a2412", image: "" },
-    { id: "a2", name: "Salsa de Mango Picante (nivel medio)", desc: "Alitas fritas con salsa artesanal dulce a base de mango habanero. Elige acompañamiento: papas Crunch con salsa BBQ y salsa de ajo, o papas amarillas con queso mozzarella y salsa teriyaki.", price: 20000, emoji: "🍗", bg: "#3a2412", image: "" },
-    { id: "a3", name: "Salsa de Parmesano Picante (nivel alto)", desc: "Alitas fritas con salsa artesanal salada de queso parmesano. Elige acompañamiento: papas Crunch con salsa BBQ y salsa de ajo, o papas amarillas con queso mozzarella y salsa teriyaki.", price: 22000, emoji: "🍗", bg: "#3a2412", image: "" },
-    { id: "a4", name: "Salsa Mixta", desc: "Alitas fritas con salsa teriyaki y salsa de mango picante. Elige acompañamiento: papas Crunch con salsa BBQ y salsa de ajo, o papas amarillas con queso mozzarella y salsa teriyaki.", price: 22000, emoji: "🍗", bg: "#3a2412", image: "" }
-  ],
-  "Papas Fritas": [
+  ]},
+  { name: "Alitas", items: [
+    { id: "a1", name: "Salsa Teriyaki", desc: "Alitas fritas con salsa artesanal dulce a base de jengibre y soya. Elige acompañamiento: papas Crunch con salsa BBQ y salsa de ajo, o papas amarillas con queso mozzarella y salsa teriyaki.", price: 20000, emoji: "🍗", bg: "#3a2412", image: "", hasSideChoice: true },
+    { id: "a2", name: "Salsa de Mango Picante (nivel medio)", desc: "Alitas fritas con salsa artesanal dulce a base de mango habanero. Elige acompañamiento: papas Crunch con salsa BBQ y salsa de ajo, o papas amarillas con queso mozzarella y salsa teriyaki.", price: 20000, emoji: "🍗", bg: "#3a2412", image: "", hasSideChoice: true },
+    { id: "a3", name: "Salsa de Parmesano Picante (nivel alto)", desc: "Alitas fritas con salsa artesanal salada de queso parmesano. Elige acompañamiento: papas Crunch con salsa BBQ y salsa de ajo, o papas amarillas con queso mozzarella y salsa teriyaki.", price: 22000, emoji: "🍗", bg: "#3a2412", image: "", hasSideChoice: true },
+    { id: "a4", name: "Salsa Mixta", desc: "Alitas fritas con salsa teriyaki y salsa de mango picante. Elige acompañamiento: papas Crunch con salsa BBQ y salsa de ajo, o papas amarillas con queso mozzarella y salsa teriyaki.", price: 22000, emoji: "🍗", bg: "#3a2412", image: "", hasSideChoice: true }
+  ]},
+  { name: "Papas Fritas", items: [
     { id: "p1", name: "Salchipapa (Infantil)", desc: "Papas Crunch, salchichas, salsa de tomate.", price: 15000, emoji: "🍟", bg: "#332912", image: "" },
     { id: "p2", name: "Papas Mexicanas (Personal)", desc: "Papas Crunch, carne boloñesa, pollo desmechado en mostaza y tomillo, queso mozzarella, pico de gallo, salsa de ajo artesanal.", price: 23000, emoji: "🍟", bg: "#332912", image: "" },
     { id: "p3", name: "Salchipapa Dúo (2 personas)", desc: "Papas Crunch, papas a la francesa, carne boloñesa, pollo desmechado en mostaza y tomillo, salchichas, tocineta, queso mozzarella, pico de gallo, salsa de ajo artesanal.", price: 40000, emoji: "🍟", bg: "#332912", image: "" },
     { id: "p4", name: "Salchipapa Familiar (5 personas)", desc: "Papas Crunch, papas a la francesa, carne boloñesa, pollo desmechado en mostaza y tomillo, salchichas, tocineta, queso mozzarella, pico de gallo, salsa de ajo artesanal.", price: 65000, emoji: "🍟", bg: "#332912", image: "" }
-  ],
-  "Carnes (a la Plancha)": [
+  ]},
+  { name: "Carnes (a la Plancha)", items: [
     { id: "c1", name: "Lomo de Cerdo", desc: "Lomo de cerdo a la plancha, acompañado de ensalada fresca y papitas Crunch con salsa de ajo artesanal y salsa BBQ.", price: 28000, emoji: "🍖", bg: "#3a2412", image: "", comingSoon: true },
     { id: "c2", name: "Pechuga de Pollo", desc: "Pechuga de pollo a la plancha, acompañada de ensalada fresca y papitas Crunch con salsa de ajo artesanal y salsa BBQ.", price: 28000, emoji: "🍗", bg: "#3a2412", image: "", comingSoon: true }
-  ],
-  "Opción Infantil": [
-    { id: "k1", name: "Cajita Feliz - Mini Hamburguesa", desc: "Pan artesanal, carne artesanal, queso mozzarella, ripio, salsas. Incluye papitas Crunch, juguito en caja, masmelito, salsa de tomate + juguete sorpresa (niño o niña).", price: 28000, emoji: "🍔", bg: "#332a12", image: "" },
-    { id: "k2", name: "Cajita Feliz - Nuggets de Pollo", desc: "4 nuggets de pollo con salsa BBQ dulce. Incluye papitas Crunch, juguito en caja, masmelito, salsa de tomate + juguete sorpresa (niño o niña).", price: 28000, emoji: "🍗", bg: "#332a12", image: "" }
-  ],
-  "Adiciones": [
+  ]},
+  { name: "Adiciones", items: [
     { id: "ad1", name: "Adición de Papitas Crunch", desc: "Papas Crunch con salsa BBQ y salsa de ajo artesanal.", price: 7000, emoji: "➕", bg: "#242428", image: "" },
     { id: "ad2", name: "Adición de Papitas Amarillas", desc: "Papas amarillas fritas con salsa teriyaki y queso mozzarella.", price: 8000, emoji: "➕", bg: "#242428", image: "" },
     { id: "ad3", name: "Adición de Aritos de Cebolla", desc: "Aritos de cebolla apanados.", price: 8000, emoji: "➕", bg: "#242428", image: "" },
@@ -489,8 +491,8 @@ const DEFAULT_MENU = {
     { id: "ad7", name: "Adición de Salsa de Mango Picante", desc: "Porción extra de salsa de mango picante.", price: 1000, emoji: "➕", bg: "#242428", image: "" },
     { id: "ad8", name: "Adición de Salsa BBQ", desc: "Porción extra de salsa BBQ.", price: 2000, emoji: "➕", bg: "#242428", image: "" },
     { id: "ad9", name: "Adición de Salsa de Ajo", desc: "Porción extra de salsa de ajo artesanal.", price: 2000, emoji: "➕", bg: "#242428", image: "" }
-  ],
-  "Bebidas Frías": [
+  ]},
+  { name: "Bebidas Frías", items: [
     { id: "bf1", name: "Coca-Cola Personal", desc: "", price: 5000, emoji: "🥤", bg: "#242428", image: "" },
     { id: "bf2", name: "Coca-Cola Familiar", desc: "", price: 10000, emoji: "🥤", bg: "#242428", image: "" },
     { id: "bf3", name: "Gaseosa Quatro Personal", desc: "", price: 5000, emoji: "🥤", bg: "#242428", image: "" },
@@ -508,8 +510,8 @@ const DEFAULT_MENU = {
     { id: "bf15", name: "Cerveza Corona", desc: "", price: 8000, emoji: "🍺", bg: "#242428", image: "" },
     { id: "bf16", name: "Cerveza Michelada", desc: "", price: 12000, emoji: "🍺", bg: "#242428", image: "" },
     { id: "bf17", name: "Jugo Natural del Día", desc: "Sabor del día, según disponibilidad.", price: 7000, emoji: "🧃", bg: "#242428", image: "" }
-  ]
-};
+  ]}
+];
 
 // ============================================
 // CONEXIÓN A LA NUBE (opcional) — ver ADMIN-SETUP.md para activarla.
@@ -537,6 +539,7 @@ let MENU = JSON.parse(JSON.stringify(DEFAULT_MENU));
 let cart = {};
 let cartNotes = {};
 let cartJalapeno = {};
+let cartSide = {};
 let deliveryLocationUrl = '';
 let deliveryType = 'delivery';
 let deliveryZone = null;
@@ -556,7 +559,7 @@ if (firebaseEnabled){
     try {
       const data = JSON.parse(saved);
       if (data.config) CONFIG = data.config;
-      if (data.menu) MENU = data.menu;
+      if (data.menu) MENU = normalizeMenu(data.menu);
     } catch(e){ /* ignora datos corruptos */ }
   }
 }
@@ -566,9 +569,18 @@ function esc(str){
   return String(str ?? "").replace(/[&<>"']/g, c => ({ "&":"&amp;", "<":"&lt;", ">":"&gt;", '"':"&quot;", "'":"&#39;" }[c]));
 }
 function fmt(n){ return (CONFIG.currency||"$") + Math.round(n).toLocaleString('es-CO'); }
+// El menú puede llegar en el formato viejo (objeto {categoría: [items]}) si venía
+// guardado de antes de este cambio; lo convertimos siempre a lista ordenada.
+function normalizeMenu(menu){
+  if (Array.isArray(menu)) return menu;
+  if (menu && typeof menu === 'object'){
+    return Object.keys(menu).map(name => ({ name, items: menu[name] }));
+  }
+  return JSON.parse(JSON.stringify(DEFAULT_MENU));
+}
 function findItem(id){
-  for (const cat in MENU){
-    const found = MENU[cat].find(i => i.id === id);
+  for (const cat of MENU){
+    const found = cat.items.find(i => i.id === id);
     if (found) return found;
   }
 }
@@ -722,7 +734,7 @@ function renderPromo(){
 
 // ---------- Menú ----------
 function renderTabs(){
-  const cats = Object.keys(MENU);
+  const cats = MENU.map(c => c.name);
   const pillHtml = (activeClass, inactiveClass) => cats.map((c,i) =>
     `<button class="flex-shrink-0 text-xs font-semibold px-3 py-1.5 rounded-full ${i===0 ? activeClass : inactiveClass}" data-cat="${esc(c)}" onclick="scrollToCat('${esc(c).replace(/'/g,"\\'")}', this)">${esc(c)}</button>`
   ).join('');
@@ -741,15 +753,15 @@ function slugify(s){ return String(s).replace(/\s+/g,'-').replace(/[^\w-]/g,'');
 function renderMenu(){
   const wrap = document.getElementById('menu-list');
   wrap.innerHTML = '';
-  for (const cat in MENU){
+  for (const cat of MENU){
     const section = document.createElement('div');
-    section.id = 'sec-' + slugify(cat);
+    section.id = 'sec-' + slugify(cat.name);
     section.className = 'mt-4';
-    const kidsBanner = (cat === 'Opción Infantil' && CONFIG.kidsMenuBannerImage)
+    const kidsBanner = (cat.name === 'Opción Infantil' && CONFIG.kidsMenuBannerImage)
       ? `<img src="${esc(CONFIG.kidsMenuBannerImage)}" class="w-full rounded-2xl mb-3" alt="Menú infantil">`
       : '';
-    section.innerHTML = `<h3 class="brand-bg text-white text-xs font-bold uppercase tracking-wide px-3 py-1.5 rounded-full mb-2" style="display:inline-block;">${esc(cat)}</h3>${kidsBanner}`;
-    MENU[cat].forEach(item => {
+    section.innerHTML = `<h3 class="brand-bg text-white text-xs font-bold uppercase tracking-wide px-3 py-1.5 rounded-full mb-2" style="display:inline-block;">${esc(cat.name)}</h3>${kidsBanner}`;
+    cat.items.forEach(item => {
       const row = document.createElement('div');
       const soldOut = !!item.soldOut;
       const comingSoon = !!item.comingSoon;
@@ -772,6 +784,7 @@ function renderMenu(){
             <div id="mctrl-${item.id}"></div>
           </div>
           <div id="mjalapeno-${item.id}"></div>
+          <div id="mside-${item.id}"></div>
           <div id="mnote-${item.id}"></div>
         </div>
       `;
@@ -779,7 +792,7 @@ function renderMenu(){
     });
     wrap.appendChild(section);
   }
-  for (const cat in MENU) MENU[cat].forEach(i => renderControl(i.id));
+  for (const cat of MENU) cat.items.forEach(i => renderControl(i.id));
 
   const footer = document.createElement('div');
   footer.className = 'sticky bottom-0 pt-2';
@@ -812,6 +825,7 @@ function renderControl(id){
       </div>`;
   }
   renderJalapenoOption(id, qty);
+  renderSideOption(id, qty);
   renderMenuNote(id, qty);
 }
 
@@ -821,9 +835,9 @@ function renderJalapenoOption(id, qty){
   const item = findItem(id);
   if (!item || !item.hasJalapeno || qty === 0){ el.innerHTML = ''; return; }
   if (!cartJalapeno[id]) cartJalapeno[id] = 'con';
-  const opts = [['con','Con jalapeño'], ['sin','Sin jalapeño'], ['aparte','Aparte']];
+  const opts = [['con','Con picante'], ['sin','Sin picante'], ['aparte','Aparte']];
   el.innerHTML = `
-    <div class="text-[11px] font-semibold muted mt-2 mb-1">🌶️ Jalapeño:</div>
+    <div class="text-[11px] font-semibold muted mt-2 mb-1">🌶️ Picante:</div>
     <div class="flex gap-1.5">
       ${opts.map(([val,label]) => `<button onclick="setJalapeno('${id}','${val}')" class="flex-1 text-[11px] font-semibold px-2 py-1.5 rounded-lg ${cartJalapeno[id]===val ? 'brand-bg text-white' : 'surface muted'}">${label}</button>`).join('')}
     </div>`;
@@ -833,7 +847,28 @@ function setJalapeno(id, val){
   renderJalapenoOption(id, cart[id]||0);
 }
 function jalapenoLabel(val){
-  return { con: 'Con jalapeño', sin: 'Sin jalapeño', aparte: 'Aparte' }[val] || '';
+  return { con: 'Con picante', sin: 'Sin picante', aparte: 'Aparte' }[val] || '';
+}
+
+function renderSideOption(id, qty){
+  const el = document.getElementById('mside-'+id);
+  if (!el) return;
+  const item = findItem(id);
+  if (!item || !item.hasSideChoice || qty === 0){ el.innerHTML = ''; return; }
+  if (!cartSide[id]) cartSide[id] = 'crunch';
+  const opts = [['crunch','Papas Crunch'], ['amarillas','Papas Amarillas']];
+  el.innerHTML = `
+    <div class="text-[11px] font-semibold muted mt-2 mb-1">🍟 Elige acompañamiento:</div>
+    <div class="flex gap-1.5">
+      ${opts.map(([val,label]) => `<button onclick="setSide('${id}','${val}')" class="flex-1 text-[11px] font-semibold px-2 py-1.5 rounded-lg ${cartSide[id]===val ? 'brand-bg text-white' : 'surface muted'}">${label}</button>`).join('')}
+    </div>`;
+}
+function setSide(id, val){
+  cartSide[id] = val;
+  renderSideOption(id, cart[id]||0);
+}
+function sideLabel(val){
+  return { crunch: 'Papas Crunch', amarillas: 'Papas Amarillas' }[val] || '';
 }
 
 function renderMenuNote(id, qty){
@@ -855,11 +890,11 @@ function addItem(id){
 function removeItem(id){
   if (!cart[id]) return;
   cart[id] -= 1;
-  if (cart[id] <= 0){ delete cart[id]; delete cartNotes[id]; delete cartJalapeno[id]; }
+  if (cart[id] <= 0){ delete cart[id]; delete cartNotes[id]; delete cartJalapeno[id]; delete cartSide[id]; }
   renderControl(id);
   updateCartBar();
 }
-function trashCartItem(id){ delete cart[id]; delete cartNotes[id]; delete cartJalapeno[id]; renderControl(id); updateCartBar(); renderCart(); }
+function trashCartItem(id){ delete cart[id]; delete cartNotes[id]; delete cartJalapeno[id]; delete cartSide[id]; renderControl(id); updateCartBar(); renderCart(); }
 function updateCartNote(id, value){ cartNotes[id] = value; }
 function cartCount(){ return Object.values(cart).reduce((a,b)=>a+b,0); }
 function cartSubtotal(){ return Object.entries(cart).reduce((s,[id,qty]) => { const it = findItem(id); return it ? s + it.price*qty : s; }, 0); }
@@ -998,12 +1033,14 @@ function renderCart(){
     if (!item) return '';
     const note = (cartNotes[id]||'').trim();
     const jalapeno = item.hasJalapeno ? jalapenoLabel(cartJalapeno[id]) : '';
+    const side = item.hasSideChoice ? sideLabel(cartSide[id]) : '';
     return `<div class="py-2" style="border-bottom:1px solid var(--border);">
       <div class="flex items-center justify-between text-sm">
         <div class="min-w-0">
           <div class="font-medium truncate">${item.emoji||'🍽️'} ${qty}x ${esc(item.name)}</div>
           <div class="text-xs muted">${fmt(item.price)} c/u</div>
           ${jalapeno ? `<div class="text-xs mt-1 brand-text">🌶️ ${esc(jalapeno)}</div>` : ''}
+          ${side ? `<div class="text-xs mt-1 brand-text">🍟 ${esc(side)}</div>` : ''}
           ${note ? `<div class="text-xs mt-1 brand-text">✏️ ${esc(note)}</div>` : ''}
         </div>
         <div class="flex items-center gap-3 flex-shrink-0">
@@ -1088,8 +1125,10 @@ async function sendOrderToWhatsApp(){
     if (!item) return '';
     const note = (cartNotes[id]||'').trim();
     const jalapeno = item.hasJalapeno ? jalapenoLabel(cartJalapeno[id]) : '';
+    const side = item.hasSideChoice ? sideLabel(cartSide[id]) : '';
     let line = `• ${qty} × ${item.name} — ${fmt(item.price*qty)}`;
-    if (jalapeno) line += `\n   Jalapeño: ${jalapeno}`;
+    if (jalapeno) line += `\n   Picante: ${jalapeno}`;
+    if (side) line += `\n   Acompañamiento: ${side}`;
     if (note) line += `\n   Nota: ${note}`;
     return line;
   }).filter(Boolean).join('\n');
@@ -1129,6 +1168,7 @@ async function sendOrderToWhatsApp(){
   cart = {};
   cartNotes = {};
   cartJalapeno = {};
+  cartSide = {};
   deliveryLocationUrl = '';
   deliveryZone = null;
   document.getElementById('cart-body').classList.add('hidden');
@@ -1253,6 +1293,7 @@ function admFactoryReset(){
   cart = {};
   cartNotes = {};
   cartJalapeno = {};
+  cartSide = {};
   closeModal('admin-modal');
   renderAll();
 }
@@ -1401,77 +1442,76 @@ function admRemovePayment(idx){ DRAFT.config.paymentMethods.splice(idx,1); rende
 // ----- Menú (categorías y productos) -----
 function renderAdminMenu(){
   const wrap = document.getElementById('adm-menu-list');
-  const cats = Object.keys(DRAFT.menu);
-  wrap.innerHTML = cats.map(cat => `
-    <div class="border border-gray-100 rounded-2xl p-3" data-cat-block="${esc(cat)}">
+  wrap.innerHTML = DRAFT.menu.map((catObj, catIdx) => `
+    <div class="border border-gray-100 rounded-2xl p-3" data-cat-block="${esc(catObj.name)}">
       <div class="flex items-center gap-2 mb-2">
-        <button data-catup="${esc(cat)}" title="Mover arriba" class="text-gray-400 text-sm px-1">▲</button>
-        <button data-catdown="${esc(cat)}" title="Mover abajo" class="text-gray-400 text-sm px-1">▼</button>
-        <input value="${esc(cat)}" class="flex-1 font-semibold text-sm border border-gray-200 rounded-xl px-3 py-1.5" data-catname-old="${esc(cat)}">
-        <button data-catdelete="${esc(cat)}" class="text-red-400 text-sm px-1">✕ Eliminar categoría</button>
+        <button data-catup="${catIdx}" title="Mover arriba" class="text-gray-400 text-sm px-1">▲</button>
+        <button data-catdown="${catIdx}" title="Mover abajo" class="text-gray-400 text-sm px-1">▼</button>
+        <input value="${esc(catObj.name)}" class="flex-1 font-semibold text-sm border border-gray-200 rounded-xl px-3 py-1.5" data-catrename="${catIdx}">
+        <button data-catdelete="${catIdx}" class="text-red-400 text-sm px-1">✕ Eliminar categoría</button>
       </div>
-      <div class="space-y-2" data-items-for="${esc(cat)}">
-        ${DRAFT.menu[cat].map((item, idx) => `
+      <div class="space-y-2">
+        ${catObj.items.map((item, idx) => `
           <div class="bg-gray-50 rounded-xl p-2 space-y-1.5">
             <div class="flex gap-2">
-              <input value="${esc(item.name)}" placeholder="Nombre del producto" class="flex-1 border border-gray-200 rounded-lg px-2 py-1.5 text-xs" data-cat="${esc(cat)}" data-idx="${idx}" data-field="name">
-              <input value="${item.price}" type="number" min="0" step="500" placeholder="Precio" class="w-24 border border-gray-200 rounded-lg px-2 py-1.5 text-xs" data-cat="${esc(cat)}" data-idx="${idx}" data-field="price">
-              <button data-itemdelete="${esc(cat)}::${idx}" class="text-red-400 text-sm px-1">✕</button>
+              <input value="${esc(item.name)}" placeholder="Nombre del producto" class="flex-1 border border-gray-200 rounded-lg px-2 py-1.5 text-xs" data-catidx="${catIdx}" data-idx="${idx}" data-field="name">
+              <input value="${item.price}" type="number" min="0" step="500" placeholder="Precio" class="w-24 border border-gray-200 rounded-lg px-2 py-1.5 text-xs" data-catidx="${catIdx}" data-idx="${idx}" data-field="price">
+              <button data-itemdelete="${catIdx}::${idx}" class="text-red-400 text-sm px-1">✕</button>
             </div>
-            <textarea placeholder="Descripción / ingredientes" class="w-full border border-gray-200 rounded-lg px-2 py-1.5 text-xs" rows="2" data-cat="${esc(cat)}" data-idx="${idx}" data-field="desc">${esc(item.desc)}</textarea>
+            <textarea placeholder="Descripción / ingredientes" class="w-full border border-gray-200 rounded-lg px-2 py-1.5 text-xs" rows="2" data-catidx="${catIdx}" data-idx="${idx}" data-field="desc">${esc(item.desc)}</textarea>
             <div class="flex gap-2">
-              <input value="${esc(item.emoji||'')}" placeholder="Emoji" maxlength="4" class="w-16 border border-gray-200 rounded-lg px-2 py-1.5 text-xs" data-cat="${esc(cat)}" data-idx="${idx}" data-field="emoji">
-              <input value="${esc(item.image||'')}" placeholder="URL de foto (opcional, reemplaza el emoji)" class="flex-1 border border-gray-200 rounded-lg px-2 py-1.5 text-xs" data-cat="${esc(cat)}" data-idx="${idx}" data-field="image">
+              <input value="${esc(item.emoji||'')}" placeholder="Emoji" maxlength="4" class="w-16 border border-gray-200 rounded-lg px-2 py-1.5 text-xs" data-catidx="${catIdx}" data-idx="${idx}" data-field="emoji">
+              <input value="${esc(item.image||'')}" placeholder="URL de foto (opcional, reemplaza el emoji)" class="flex-1 border border-gray-200 rounded-lg px-2 py-1.5 text-xs" data-catidx="${catIdx}" data-idx="${idx}" data-field="image">
             </div>
             <label class="flex items-center gap-1.5 text-xs font-semibold ${item.soldOut ? 'text-red-500' : 'text-gray-500'}">
-              <input type="checkbox" ${item.soldOut ? 'checked' : ''} style="width:auto;" data-cat="${esc(cat)}" data-idx="${idx}" data-boolfield="soldOut">
+              <input type="checkbox" ${item.soldOut ? 'checked' : ''} style="width:auto;" data-catidx="${catIdx}" data-idx="${idx}" data-boolfield="soldOut">
               🚫 Agotado (los clientes no podrán pedirlo)
             </label>
             <label class="flex items-center gap-1.5 text-xs font-semibold ${item.comingSoon ? 'text-sky-500' : 'text-gray-500'}">
-              <input type="checkbox" ${item.comingSoon ? 'checked' : ''} style="width:auto;" data-cat="${esc(cat)}" data-idx="${idx}" data-boolfield="comingSoon">
+              <input type="checkbox" ${item.comingSoon ? 'checked' : ''} style="width:auto;" data-catidx="${catIdx}" data-idx="${idx}" data-boolfield="comingSoon">
               🔜 Próximamente (aún no se puede pedir)
             </label>
           </div>
         `).join('')}
       </div>
-      <button data-additem="${esc(cat)}" class="mt-2 text-xs font-semibold brand-text">+ Agregar producto</button>
+      <button data-additem="${catIdx}" class="mt-2 text-xs font-semibold brand-text">+ Agregar producto</button>
     </div>
   `).join('') || '<p class="text-xs text-gray-400">Aún no hay categorías. Agrega la primera abajo.</p>';
 
   wrap.querySelectorAll('input[data-field], textarea[data-field]').forEach(inp => {
     inp.oninput = e => {
-      const cat = e.target.dataset.cat, idx = Number(e.target.dataset.idx), field = e.target.dataset.field;
+      const catIdx = Number(e.target.dataset.catidx), idx = Number(e.target.dataset.idx), field = e.target.dataset.field;
       const val = field === 'price' ? (Number(e.target.value)||0) : e.target.value;
-      DRAFT.menu[cat][idx][field] = val;
+      DRAFT.menu[catIdx].items[idx][field] = val;
     };
   });
   wrap.querySelectorAll('input[data-boolfield]').forEach(inp => {
     inp.onchange = e => {
-      const cat = e.target.dataset.cat, idx = Number(e.target.dataset.idx), field = e.target.dataset.boolfield;
-      DRAFT.menu[cat][idx][field] = e.target.checked;
+      const catIdx = Number(e.target.dataset.catidx), idx = Number(e.target.dataset.idx), field = e.target.dataset.boolfield;
+      DRAFT.menu[catIdx].items[idx][field] = e.target.checked;
       const activeColor = field === 'comingSoon' ? 'text-sky-500' : 'text-red-500';
       const label = e.target.closest('label');
       label.classList.toggle(activeColor, e.target.checked);
       label.classList.toggle('text-gray-500', !e.target.checked);
     };
   });
-  wrap.querySelectorAll('input[data-catname-old]').forEach(inp => {
-    inp.onchange = e => admRenameCategory(e.target.dataset.catnameOld, e.target.value.trim());
+  wrap.querySelectorAll('input[data-catrename]').forEach(inp => {
+    inp.onchange = e => admRenameCategory(Number(e.target.dataset.catrename), e.target.value.trim());
   });
   wrap.querySelectorAll('[data-catdelete]').forEach(btn => {
-    btn.onclick = () => admRemoveCategory(btn.dataset.catdelete);
+    btn.onclick = () => admRemoveCategory(Number(btn.dataset.catdelete));
   });
   wrap.querySelectorAll('[data-catup]').forEach(btn => {
-    btn.onclick = () => admMoveCategory(btn.dataset.catup, -1);
+    btn.onclick = () => admMoveCategory(Number(btn.dataset.catup), -1);
   });
   wrap.querySelectorAll('[data-catdown]').forEach(btn => {
-    btn.onclick = () => admMoveCategory(btn.dataset.catdown, 1);
+    btn.onclick = () => admMoveCategory(Number(btn.dataset.catdown), 1);
   });
   wrap.querySelectorAll('[data-itemdelete]').forEach(btn => {
-    btn.onclick = () => { const [cat, idx] = btn.dataset.itemdelete.split('::'); admRemoveItem(cat, Number(idx)); };
+    btn.onclick = () => { const [catIdx, idx] = btn.dataset.itemdelete.split('::').map(Number); admRemoveItem(catIdx, idx); };
   });
   wrap.querySelectorAll('[data-additem]').forEach(btn => {
-    btn.onclick = () => admAddItem(btn.dataset.additem);
+    btn.onclick = () => admAddItem(Number(btn.dataset.additem));
   });
 }
 
@@ -1479,41 +1519,34 @@ function admAddCategory(){
   const input = document.getElementById('adm-new-cat');
   const name = input.value.trim();
   if (!name){ return; }
-  if (DRAFT.menu[name]){ alert('Ya existe una categoría con ese nombre.'); return; }
-  DRAFT.menu[name] = [];
+  if (DRAFT.menu.some(c => c.name === name)){ alert('Ya existe una categoría con ese nombre.'); return; }
+  DRAFT.menu.push({ name, items: [] });
   input.value = '';
   renderAdminMenu();
 }
-function admRenameCategory(oldName, newName){
-  if (!newName || newName === oldName){ renderAdminMenu(); return; }
-  if (DRAFT.menu[newName]){ alert('Ya existe una categoría con ese nombre.'); renderAdminMenu(); return; }
-  const rebuilt = {};
-  for (const k in DRAFT.menu) rebuilt[k === oldName ? newName : k] = DRAFT.menu[k];
-  DRAFT.menu = rebuilt;
+function admRenameCategory(catIdx, newName){
+  if (!newName || newName === DRAFT.menu[catIdx].name){ renderAdminMenu(); return; }
+  if (DRAFT.menu.some((c,i) => c.name === newName && i !== catIdx)){ alert('Ya existe una categoría con ese nombre.'); renderAdminMenu(); return; }
+  DRAFT.menu[catIdx].name = newName;
   renderAdminMenu();
 }
-function admRemoveCategory(cat){
-  if (!confirm(`¿Eliminar la categoría "${cat}" y todos sus productos?`)) return;
-  delete DRAFT.menu[cat];
+function admRemoveCategory(catIdx){
+  if (!confirm(`¿Eliminar la categoría "${DRAFT.menu[catIdx].name}" y todos sus productos?`)) return;
+  DRAFT.menu.splice(catIdx,1);
   renderAdminMenu();
 }
-function admMoveCategory(cat, dir){
-  const keys = Object.keys(DRAFT.menu);
-  const i = keys.indexOf(cat);
-  const j = i + dir;
-  if (j < 0 || j >= keys.length) return;
-  [keys[i], keys[j]] = [keys[j], keys[i]];
-  const rebuilt = {};
-  keys.forEach(k => { rebuilt[k] = DRAFT.menu[k]; });
-  DRAFT.menu = rebuilt;
+function admMoveCategory(catIdx, dir){
+  const j = catIdx + dir;
+  if (j < 0 || j >= DRAFT.menu.length) return;
+  [DRAFT.menu[catIdx], DRAFT.menu[j]] = [DRAFT.menu[j], DRAFT.menu[catIdx]];
   renderAdminMenu();
 }
-function admAddItem(cat){
-  DRAFT.menu[cat].push({ id: newId(), name: 'Nuevo producto', desc: '', price: 0, emoji: '🍽️', bg: '#242428', image: '', soldOut: false, comingSoon: false });
+function admAddItem(catIdx){
+  DRAFT.menu[catIdx].items.push({ id: newId(), name: 'Nuevo producto', desc: '', price: 0, emoji: '🍽️', bg: '#242428', image: '', soldOut: false, comingSoon: false });
   renderAdminMenu();
 }
-function admRemoveItem(cat, idx){
-  DRAFT.menu[cat].splice(idx,1);
+function admRemoveItem(catIdx, idx){
+  DRAFT.menu[catIdx].items.splice(idx,1);
   renderAdminMenu();
 }
 
@@ -1530,6 +1563,7 @@ async function saveAdmin(){
   cart = {};
   cartNotes = {};
   cartJalapeno = {};
+  cartSide = {};
   renderAll();
 
   if (firebaseEnabled){
@@ -1556,7 +1590,7 @@ if (firebaseEnabled){
     if (doc.exists){
       const data = doc.data();
       if (data.config) CONFIG = data.config;
-      if (data.menu) MENU = data.menu;
+      if (data.menu) MENU = normalizeMenu(data.menu);
     }
     renderAll();
   }, err => {
