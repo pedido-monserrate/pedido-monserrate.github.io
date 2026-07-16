@@ -113,6 +113,16 @@
     </button>
   </div>
 
+  <div class="px-6 mt-3">
+    <button onclick="startOrder('dinein')" class="w-full rounded-2xl overflow-hidden text-center surface">
+      <div id="home-dinein-content" class="p-4">
+        <div class="text-4xl mb-1">🍽️</div>
+        <div class="font-bold text-sm">Para Comer Aquí</div>
+        <div class="text-[11px] mt-1 muted">Pide desde casa y te esperamos</div>
+      </div>
+    </button>
+  </div>
+
   <!-- ============ ICONOS RÁPIDOS ============ -->
   <div class="flex justify-center gap-10 mt-5 px-6 text-center">
     <a id="maps-link" href="#" target="_blank" class="flex flex-col items-center">
@@ -130,6 +140,10 @@
     <button onclick="downloadVCard()" class="flex flex-col items-center muted hover:text-white transition">
       <span class="text-xl">💾</span>
       <span class="text-[10px] font-medium mt-1">Guardar</span>
+    </button>
+    <button onclick="sendFeedback()" class="flex flex-col items-center muted hover:text-white transition">
+      <span class="text-xl">💬</span>
+      <span class="text-[10px] font-medium mt-1">Opinión</span>
     </button>
     <button onclick="openShareModal()" class="flex flex-col items-center muted hover:text-white transition">
       <span class="text-xl">🔗</span>
@@ -181,11 +195,22 @@
           </div>
         </button>
       </div>
+      <button id="dt-dinein" onclick="selectDeliveryType('dinein')" class="w-full rounded-2xl overflow-hidden text-center surface mb-4">
+        <div id="cart-dinein-content" class="p-4">
+          <div class="text-4xl mb-1">🍽️</div>
+          <div class="font-bold text-sm">Para Comer Aquí</div>
+          <div class="text-[11px] mt-1 muted">Pide desde casa y te esperamos</div>
+        </div>
+      </button>
 
       <button onclick="closeModal('cart-modal')" class="w-full text-sm font-bold brand-text border-2 brand-border rounded-2xl py-2.5 mb-4 flex items-center justify-center gap-2">← Seguir agregando productos</button>
 
       <div class="text-xs font-semibold muted mb-1 uppercase tracking-wide">Mi pedido</div>
       <div id="cart-lines" class="mb-3"></div>
+
+      <div id="cf-dinein-note" class="mb-3 text-xs rounded-xl p-3 leading-relaxed surface brand-text">
+        🪑 No manejamos reservas de mesa: al llegar, si no hay una libre, debes esperar a que se desocupe.
+      </div>
 
       <div id="cf-zone-wrap" class="mb-3">
         <label class="text-xs font-semibold muted block mb-1">Zona de entrega</label>
@@ -314,6 +339,7 @@
         <div class="admin-field col-span-2"><label>Foto principal / hero (URL)</label><input id="adm-hero-image" placeholder="https://..."></div>
         <div class="admin-field col-span-2"><label>Foto tarjeta "Domicilio" (URL, opcional)</label><input id="adm-delivery-card-image" placeholder="https://..."></div>
         <div class="admin-field col-span-2"><label>Foto tarjeta "Para retirar" (URL, opcional)</label><input id="adm-pickup-card-image" placeholder="https://..."></div>
+        <div class="admin-field col-span-2"><label>Foto tarjeta "Para Comer Aquí" (URL, opcional)</label><input id="adm-dinein-card-image" placeholder="https://..."></div>
         <div class="admin-field col-span-2"><label>Teléfono (con indicativo, ej. +573001234567)</label><input id="adm-phone"></div>
         <div class="admin-field col-span-2"><label>WhatsApp (solo números, ej. 573001234567)</label><input id="adm-whatsapp"></div>
         <div class="admin-field col-span-2"><label>Dirección / ubicación</label><input id="adm-address"></div>
@@ -401,6 +427,7 @@ const DEFAULT_CONFIG = {
   heroDescription: "Disfruta de nuestras deliciosas hamburguesas, alitas, burritos y mucho más.",
   deliveryCardImage: "https://i.postimg.cc/0yV6SfhD/Boton-a-domicilio.png",
   pickupCardImage: "https://i.postimg.cc/SNzVDXmL/para-retirar.png",
+  dineInCardImage: "https://i.postimg.cc/2ytxGNn5/comer-aqui.png",
   brandColor: "#f5a524",
   brandColorDark: "#c2610a",
   avatarEmoji: "🍔",
@@ -558,7 +585,7 @@ if (firebaseEnabled){
   if (saved){
     try {
       const data = JSON.parse(saved);
-      if (data.config) CONFIG = data.config;
+      if (data.config) CONFIG = Object.assign({}, DEFAULT_CONFIG, data.config);
       if (data.menu) MENU = normalizeMenu(data.menu);
     } catch(e){ /* ignora datos corruptos */ }
   }
@@ -692,20 +719,26 @@ function startOrder(type){
   openModal('menu-modal');
 }
 
-// ---------- Tarjetas de Domicilio / Para retirar ----------
+// ---------- Tarjetas de Domicilio / Para retirar / Para Comer Aquí ----------
 function renderDeliveryCards(){
   const dImg = CONFIG.deliveryCardImage;
   const pImg = CONFIG.pickupCardImage;
+  const iImg = CONFIG.dineInCardImage;
   const dHtml = dImg
     ? `<img src="${esc(dImg)}" class="w-full h-auto block" alt="Domicilio">`
     : `<div class="p-4"><div class="text-4xl mb-1">🛵</div><div class="font-bold text-sm">Domicilio</div><div class="text-[11px] mt-1 muted">Lo llevamos hasta tu casa</div></div>`;
   const pHtml = pImg
     ? `<img src="${esc(pImg)}" class="w-full h-auto block" alt="Para retirar">`
     : `<div class="p-4"><div class="text-4xl mb-1">🥡</div><div class="font-bold text-sm">Para retirar</div><div class="text-[11px] mt-1 muted">Pasas a retirarlo tú</div></div>`;
+  const iHtml = iImg
+    ? `<img src="${esc(iImg)}" class="w-full h-auto block" alt="Para Comer Aquí">`
+    : `<div class="p-4"><div class="text-4xl mb-1">🍽️</div><div class="font-bold text-sm">Para Comer Aquí</div><div class="text-[11px] mt-1 muted">Pide desde casa y te esperamos</div></div>`;
   document.getElementById('home-delivery-content').innerHTML = dHtml;
   document.getElementById('home-pickup-content').innerHTML = pHtml;
+  document.getElementById('home-dinein-content').innerHTML = iHtml;
   document.getElementById('cart-delivery-content').innerHTML = dHtml;
   document.getElementById('cart-pickup-content').innerHTML = pHtml;
+  document.getElementById('cart-dinein-content').innerHTML = iHtml;
 }
 setInterval(() => { if (CONFIG) renderStatusBadge(); }, 60000);
 
@@ -785,7 +818,7 @@ function renderMenu(){
           </div>
           <div id="mjalapeno-${item.id}"></div>
           <div id="mside-${item.id}"></div>
-          <div id="mnote-${item.id}"></div>
+          ${cat.name === 'Bebidas Frías' ? '' : `<div id="mnote-${item.id}"></div>`}
         </div>
       `;
       section.appendChild(row);
@@ -922,8 +955,10 @@ function openCartModal(){
 function applyDeliveryUI(){
   document.getElementById('dt-delivery').classList.toggle('dt-active', deliveryType==='delivery');
   document.getElementById('dt-pickup').classList.toggle('dt-active', deliveryType==='pickup');
+  document.getElementById('dt-dinein').classList.toggle('dt-active', deliveryType==='dinein');
   document.getElementById('cf-address-wrap').style.display = deliveryType === 'delivery' ? 'block' : 'none';
   document.getElementById('cf-zone-wrap').style.display = deliveryType === 'delivery' ? 'block' : 'none';
+  document.getElementById('cf-dinein-note').style.display = deliveryType === 'dinein' ? 'block' : 'none';
   renderDeliveryZoneButtons();
 }
 function renderDeliveryZoneButtons(){
@@ -1054,7 +1089,7 @@ function renderCart(){
   updateCartTotals();
   updatePaymentNote();
 }
-function packagingTotal(){ return cartCount() * (CONFIG.packagingFee||0); }
+function packagingTotal(){ return deliveryType === 'dinein' ? 0 : cartCount() * (CONFIG.packagingFee||0); }
 function currentDeliveryFee(){
   if (deliveryType !== 'delivery' || !deliveryZone) return 0;
   return deliveryZone === 'urbana' ? (CONFIG.deliveryFeeUrban||0) : (CONFIG.deliveryFeeTown||0);
@@ -1065,11 +1100,11 @@ function updateCartTotals(){
   const packaging = packagingTotal();
   const packagingRow = document.getElementById('cart-packaging-row');
   if (packaging > 0){
-    packagingRow.classList.remove('hidden');
+    packagingRow.style.display = 'flex';
     document.getElementById('cart-packaging-label').textContent = `${CONFIG.packagingLabel||'Empaque'} (${cartCount()} x ${fmt(CONFIG.packagingFee||0)})`;
     document.getElementById('cart-packaging').textContent = fmt(packaging);
   } else {
-    packagingRow.classList.add('hidden');
+    packagingRow.style.display = 'none';
   }
   document.getElementById('cart-subtotal').textContent = fmt(subtotal);
   document.getElementById('cart-delivery').textContent = fee === 0 ? 'Gratis' : fmt(fee);
@@ -1152,6 +1187,14 @@ async function sendOrderToWhatsApp(){
     msg += `${divider}\n\n`;
     msg += `${paymentLines}\n`;
     msg += `📞 Teléfono:\n${phone}`;
+  } else if (deliveryType === 'dinein'){
+    msg = `🍽️ NUEVO PEDIDO PARA COMER AQUÍ ${orderTag}\n\n`;
+    msg += `👤 Cliente: ${name}\n`;
+    if (phone) msg += `📞 Teléfono: ${phone}\n`;
+    msg += `\n🍔 Pedido\n${itemLines}\n`;
+    msg += `\n${paymentLines}\n`;
+    msg += `\n💰 Total: ${fmt(total)}\n\n`;
+    msg += `🪑 Voy en camino a comer en el restaurante. Sé que no manejan reservas de mesa y espero una disponible si no hay al llegar.`;
   } else {
     msg = `🛍️ NUEVO PEDIDO PARA RETIRAR ${orderTag}\n\n`;
     msg += `👤 Cliente: ${name}\n`;
@@ -1184,6 +1227,13 @@ function renderHours(){
       <span class="muted">${esc(h.day)}</span>
       <span class="font-semibold">${esc(h.time)}</span>
     </div>`).join('');
+}
+
+// ---------- Opinión / sugerencia (vía WhatsApp) ----------
+function sendFeedback(){
+  const msg = `Hola, quiero dejarles mi opinión sobre ${CONFIG.restaurantName}:\n\n`;
+  const url = `https://wa.me/${CONFIG.whatsappNumber}?text=${encodeURIComponent(msg)}`;
+  window.open(url, '_blank');
 }
 
 // ---------- Compartir / QR ----------
@@ -1309,6 +1359,7 @@ function renderAdminForm(){
   document.getElementById('adm-hero-image').value = c.heroImage || '';
   document.getElementById('adm-delivery-card-image').value = c.deliveryCardImage || '';
   document.getElementById('adm-pickup-card-image').value = c.pickupCardImage || '';
+  document.getElementById('adm-dinein-card-image').value = c.dineInCardImage || '';
   document.getElementById('adm-phone').value = c.phoneTel || '';
   document.getElementById('adm-whatsapp').value = c.whatsappNumber || '';
   document.getElementById('adm-address').value = c.address || '';
@@ -1339,6 +1390,7 @@ function renderAdminForm(){
     ['adm-name','restaurantName'], ['adm-tagline','tagline'], ['adm-hero-desc','heroDescription'],
     ['adm-avatar-emoji','avatarEmoji'], ['adm-avatar-image','avatarImage'], ['adm-hero-image','heroImage'],
     ['adm-delivery-card-image','deliveryCardImage'], ['adm-pickup-card-image','pickupCardImage'],
+    ['adm-dinein-card-image','dineInCardImage'],
     ['adm-kids-banner','kidsMenuBannerImage'],
     ['adm-phone','phoneTel'], ['adm-whatsapp','whatsappNumber'], ['adm-address','address'],
     ['adm-instagram','instagramUrl'], ['adm-maps-icon','mapsIconImage'], ['adm-ig-icon','igIconImage'],
@@ -1597,7 +1649,7 @@ if (firebaseEnabled){
     if (adminOpen) return; // no pisar lo que el dueño está editando
     if (doc.exists){
       const data = doc.data();
-      if (data.config) CONFIG = data.config;
+      if (data.config) CONFIG = Object.assign({}, DEFAULT_CONFIG, data.config);
       if (data.menu) MENU = normalizeMenu(data.menu);
     }
     renderAll();
