@@ -830,13 +830,12 @@ function renderMenu(){
       ? `<img src="${esc(CONFIG.kidsMenuBannerImage)}" class="w-full rounded-2xl mb-3" alt="Menú infantil">`
       : '';
     section.innerHTML = `<h3 class="brand-bg text-white text-xs font-bold uppercase tracking-wide px-3 py-1.5 rounded-full mb-2" style="display:inline-block;">${esc(cat.name)}</h3>${kidsBanner}`;
-    const visibleItems = cat.items.filter(item => !(isDineInOnly(item) && deliveryType !== 'dinein'));
-    if (visibleItems.length === 0) continue;
-    visibleItems.forEach(item => {
+    cat.items.forEach(item => {
       const row = document.createElement('div');
       const soldOut = !!item.soldOut;
       const comingSoon = !!item.comingSoon;
-      row.className = 'flex gap-3 rounded-2xl p-3 mb-2 surface' + (soldOut || comingSoon ? ' opacity-60' : '');
+      const dineInLocked = isDineInOnly(item) && deliveryType !== 'dinein';
+      row.className = 'flex gap-3 rounded-2xl p-3 mb-2 surface' + (soldOut || comingSoon || dineInLocked ? ' opacity-60' : '');
       const thumb = item.image
         ? `<img src="${esc(item.image)}" class="w-16 h-16 rounded-xl object-cover flex-shrink-0" alt="${esc(item.name)}">`
         : `<div class="w-16 h-16 rounded-xl flex items-center justify-center text-2xl flex-shrink-0" style="background:${esc(item.bg||'#242428')}">${item.emoji||'🍽️'}</div>`;
@@ -844,6 +843,8 @@ function renderMenu(){
         ? `<span class="absolute inset-0 flex items-center justify-center"><span class="text-[10px] font-extrabold text-red-500 border-2 border-red-500 rounded px-1.5 py-0.5 -rotate-12 bg-black/50 tracking-wide">AGOTADO</span></span>`
         : comingSoon
         ? `<span class="absolute inset-0 flex items-center justify-center"><span class="text-[10px] font-extrabold text-sky-400 border-2 border-sky-400 rounded px-1.5 py-0.5 -rotate-12 bg-black/50 tracking-wide">PRÓXIMAMENTE</span></span>`
+        : dineInLocked
+        ? `<span class="absolute inset-0 flex items-center justify-center"><span class="text-[10px] font-extrabold text-purple-400 border-2 border-purple-400 rounded px-1.5 py-0.5 -rotate-12 bg-black/50 tracking-wide">SOLO EN MESA</span></span>`
         : '';
       row.innerHTML = `
         <div class="relative flex-shrink-0">${thumb}${stamp}</div>
@@ -882,6 +883,10 @@ function renderControl(id){
   }
   if (item && item.comingSoon){
     el.innerHTML = `<span class="text-[11px] font-bold text-sky-400 uppercase tracking-wide">Próximamente</span>`;
+    return;
+  }
+  if (item && isDineInOnly(item) && deliveryType !== 'dinein'){
+    el.innerHTML = `<span class="text-[11px] font-bold text-purple-400 uppercase tracking-wide">Solo para comer aquí</span>`;
     return;
   }
   const qty = cart[id] || 0;
@@ -954,6 +959,7 @@ function renderMenuNote(id, qty){
 function addItem(id){
   const item = findItem(id);
   if (item && (item.soldOut || item.comingSoon)) return;
+  if (item && isDineInOnly(item) && deliveryType !== 'dinein') return;
   cart[id] = (cart[id]||0) + 1;
   renderControl(id);
   updateCartBar();
