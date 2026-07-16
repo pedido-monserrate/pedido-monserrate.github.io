@@ -1471,6 +1471,14 @@ function renderAdminMenu(){
               <input type="checkbox" ${item.comingSoon ? 'checked' : ''} style="width:auto;" data-catidx="${catIdx}" data-idx="${idx}" data-boolfield="comingSoon">
               🔜 Próximamente (aún no se puede pedir)
             </label>
+            <label class="flex items-center gap-1.5 text-xs font-semibold ${item.hasJalapeno ? 'text-amber-500' : 'text-gray-500'}">
+              <input type="checkbox" ${item.hasJalapeno ? 'checked' : ''} style="width:auto;" data-catidx="${catIdx}" data-idx="${idx}" data-boolfield="hasJalapeno">
+              🌶️ Ofrece elegir picante (con / sin / aparte)
+            </label>
+            <label class="flex items-center gap-1.5 text-xs font-semibold ${item.hasSideChoice ? 'text-amber-500' : 'text-gray-500'}">
+              <input type="checkbox" ${item.hasSideChoice ? 'checked' : ''} style="width:auto;" data-catidx="${catIdx}" data-idx="${idx}" data-boolfield="hasSideChoice">
+              🍟 Ofrece elegir acompañamiento (papas Crunch / Amarillas)
+            </label>
           </div>
         `).join('')}
       </div>
@@ -1489,7 +1497,7 @@ function renderAdminMenu(){
     inp.onchange = e => {
       const catIdx = Number(e.target.dataset.catidx), idx = Number(e.target.dataset.idx), field = e.target.dataset.boolfield;
       DRAFT.menu[catIdx].items[idx][field] = e.target.checked;
-      const activeColor = field === 'comingSoon' ? 'text-sky-500' : 'text-red-500';
+      const activeColor = field === 'comingSoon' ? 'text-sky-500' : (field === 'hasJalapeno' || field === 'hasSideChoice') ? 'text-amber-500' : 'text-red-500';
       const label = e.target.closest('label');
       label.classList.toggle(activeColor, e.target.checked);
       label.classList.toggle('text-gray-500', !e.target.checked);
