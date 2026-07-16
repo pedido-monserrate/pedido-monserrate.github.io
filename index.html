@@ -244,7 +244,7 @@
       <div class="text-sm space-y-1 mb-4">
         <div class="flex justify-between"><span class="muted">Subtotal</span><span id="cart-subtotal">$0</span></div>
         <div id="cart-packaging-row" class="flex justify-between"><span id="cart-packaging-label" class="muted">Empaque</span><span id="cart-packaging">$0</span></div>
-        <div class="flex justify-between"><span class="muted">Delivery</span><span id="cart-delivery">$0</span></div>
+        <div class="flex justify-between"><span class="muted">Domicilio</span><span id="cart-delivery">$0</span></div>
         <div class="flex justify-between font-bold text-base pt-2 mt-1" style="border-top:1px solid var(--border);"><span>Total</span><span id="cart-total">$0</span></div>
       </div>
 
@@ -626,6 +626,7 @@ function isDineInOnly(item){
 function itemNeedsPackaging(item, catName){
   const cat = (catName || '').toLowerCase();
   if (cat.includes('bebida')) return false;
+  if (cat.includes('infantil')) return false;
   if (cat.includes('adici')){
     return /papitas? crunch|papitas? amarillas|aritos de cebolla/i.test(item.name || '');
   }
