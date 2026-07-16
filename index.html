@@ -69,7 +69,7 @@
     <div id="hero-pattern" class="absolute inset-0 opacity-20 text-7xl flex flex-wrap gap-4 p-2 select-none" style="background:var(--surface);">🌵🍔🌶️🌮🥙🌵🍔🌶️</div>
     <div class="absolute inset-0" style="background:linear-gradient(180deg, rgba(0,0,0,.55) 0%, rgba(0,0,0,.8) 65%, var(--bg) 100%);"></div>
 
-    <div id="rating-chip" class="absolute top-4 right-4 z-10 text-right"></div>
+    <div id="rating-chip" onclick="sendFeedback()" class="absolute top-4 right-4 z-10 text-right cursor-pointer"></div>
 
     <div class="relative z-10 flex flex-col items-center pt-10 px-6 text-center">
       <img id="rlogo" class="hidden h-24 object-contain mb-3" alt="Logo">
@@ -685,7 +685,8 @@ function renderRating(){
   if (!CONFIG.ratingScore){ el.innerHTML = ''; return; }
   el.innerHTML = `
     <div class="flex items-center justify-end gap-1 text-sm font-bold text-white" style="text-shadow:0 1px 3px rgba(0,0,0,.7);"><span class="brand-text">★</span>${esc(CONFIG.ratingScore)}</div>
-    <div class="text-[11px]" style="color:rgba(255,255,255,.8); text-shadow:0 1px 3px rgba(0,0,0,.7);">${Number(CONFIG.ratingCount||0).toLocaleString('es-CO')} opiniones</div>`;
+    <div class="text-[11px]" style="color:rgba(255,255,255,.8); text-shadow:0 1px 3px rgba(0,0,0,.7);">${Number(CONFIG.ratingCount||0).toLocaleString('es-CO')} opiniones</div>
+    <div class="text-[10px] font-semibold brand-text mt-0.5">💬 Danos tu opinión</div>`;
 }
 
 // ---------- Estado abierto/cerrado ----------
