@@ -228,8 +228,8 @@
       </div>
 
       <div class="mb-3">
-        <label class="text-xs font-semibold muted block mb-1">Tu nombre</label>
-        <input id="cf-name" type="text" placeholder="Ej. María Rodríguez" class="w-full rounded-xl px-3 py-2 text-sm surface" style="color:var(--text);">
+        <label class="text-xs font-semibold muted block mb-1">Nombres/Apellidos</label>
+        <input id="cf-name" type="text" placeholder="Ej. María Fernanda Rodríguez Gómez" class="w-full rounded-xl px-3 py-2 text-sm surface" style="color:var(--text);">
       </div>
 
       <div class="mb-3">
@@ -611,6 +611,26 @@ function findItem(id){
     if (found) return found;
   }
 }
+function findItemCategory(id){
+  for (const cat of MENU){
+    if (cat.items.some(i => i.id === id)) return cat.name;
+  }
+  return null;
+}
+// Productos que, por su tamaño, solo se sirven en mesa (no van en domicilio ni para retirar).
+function isDineInOnly(item){
+  return /salchipapa d[uú]o|salchipapa familiar/i.test(item.name || '');
+}
+// Empaque: no se cobra en bebidas, ni en adiciones que van dentro de otro plato
+// (solo se cobra empaque de adiciones cuando son papas o aritos, que necesitan su propia caja).
+function itemNeedsPackaging(item, catName){
+  const cat = (catName || '').toLowerCase();
+  if (cat.includes('bebida')) return false;
+  if (cat.includes('adici')){
+    return /papitas? crunch|papitas? amarillas|aritos de cebolla/i.test(item.name || '');
+  }
+  return true;
+}
 function newId(){ return "id" + Date.now().toString(36) + Math.random().toString(36).slice(2,7); }
 function derivedMapsUrl(){
   return CONFIG.mapsUrl || ("https://www.google.com/maps/search/?api=1&query=" + encodeURIComponent(CONFIG.address || CONFIG.restaurantName));
@@ -717,6 +737,7 @@ function renderStatusBadge(){
 // ---------- Elegir tipo de entrega desde la portada ----------
 function startOrder(type){
   deliveryType = type;
+  renderMenu();
   openModal('menu-modal');
 }
 
@@ -795,7 +816,9 @@ function renderMenu(){
       ? `<img src="${esc(CONFIG.kidsMenuBannerImage)}" class="w-full rounded-2xl mb-3" alt="Menú infantil">`
       : '';
     section.innerHTML = `<h3 class="brand-bg text-white text-xs font-bold uppercase tracking-wide px-3 py-1.5 rounded-full mb-2" style="display:inline-block;">${esc(cat.name)}</h3>${kidsBanner}`;
-    cat.items.forEach(item => {
+    const visibleItems = cat.items.filter(item => !(isDineInOnly(item) && deliveryType !== 'dinein'));
+    if (visibleItems.length === 0) continue;
+    visibleItems.forEach(item => {
       const row = document.createElement('div');
       const soldOut = !!item.soldOut;
       const comingSoon = !!item.comingSoon;
@@ -977,8 +1000,17 @@ function selectDeliveryZone(zone){
 }
 function selectDeliveryType(type){
   deliveryType = type;
+  if (deliveryType !== 'dinein'){
+    Object.keys(cart).forEach(id => {
+      const item = findItem(id);
+      if (item && isDineInOnly(item)){
+        delete cart[id]; delete cartNotes[id]; delete cartJalapeno[id]; delete cartSide[id];
+      }
+    });
+  }
   applyDeliveryUI();
-  updateCartTotals();
+  renderMenu();
+  renderCart();
 }
 function shareLocation(){
   const btn = document.getElementById('cf-location-btn');
@@ -1090,7 +1122,15 @@ function renderCart(){
   updateCartTotals();
   updatePaymentNote();
 }
-function packagingTotal(){ return deliveryType === 'dinein' ? 0 : cartCount() * (CONFIG.packagingFee||0); }
+function packagingEligibleCount(){
+  if (deliveryType === 'dinein') return 0;
+  return Object.entries(cart).reduce((sum, [id, qty]) => {
+    const item = findItem(id);
+    if (!item || !itemNeedsPackaging(item, findItemCategory(id))) return sum;
+    return sum + qty;
+  }, 0);
+}
+function packagingTotal(){ return packagingEligibleCount() * (CONFIG.packagingFee||0); }
 function currentDeliveryFee(){
   if (deliveryType !== 'delivery' || !deliveryZone) return 0;
   return deliveryZone === 'urbana' ? (CONFIG.deliveryFeeUrban||0) : (CONFIG.deliveryFeeTown||0);
@@ -1102,7 +1142,7 @@ function updateCartTotals(){
   const packagingRow = document.getElementById('cart-packaging-row');
   if (packaging > 0){
     packagingRow.style.display = 'flex';
-    document.getElementById('cart-packaging-label').textContent = `${CONFIG.packagingLabel||'Empaque'} (${cartCount()} x ${fmt(CONFIG.packagingFee||0)})`;
+    document.getElementById('cart-packaging-label').textContent = `${CONFIG.packagingLabel||'Empaque'} (${packagingEligibleCount()} x ${fmt(CONFIG.packagingFee||0)})`;
     document.getElementById('cart-packaging').textContent = fmt(packaging);
   } else {
     packagingRow.style.display = 'none';
@@ -1181,7 +1221,7 @@ async function sendOrderToWhatsApp(){
     msg += `${divider}\n`;
     msg += `🛒 Pedido\n${itemLines}\n`;
     msg += `${divider}\n`;
-    if (packaging > 0) msg += `🥤 ${CONFIG.packagingLabel||'Caja para llevar'}: ${cartCount()} × ${fmt(CONFIG.packagingFee||0)}\n`;
+    if (packaging > 0) msg += `🥤 ${CONFIG.packagingLabel||'Caja para llevar'}: ${packagingEligibleCount()} × ${fmt(CONFIG.packagingFee||0)}\n`;
     msg += `💰 Subtotal: ${fmt(subtotal)}\n`;
     msg += `🚚 Domicilio (${deliveryZone === 'urbana' ? 'zona urbana' : 'zona rural'}): ${fmt(fee)}\n\n`;
     msg += `💵 TOTAL: ${fmt(total)}\n\n`;
@@ -1201,7 +1241,7 @@ async function sendOrderToWhatsApp(){
     msg += `👤 Cliente: ${name}\n`;
     if (phone) msg += `📞 Teléfono: ${phone}\n`;
     msg += `\n🍔 Pedido\n${itemLines}\n`;
-    if (packaging > 0) msg += `\n🥤 ${CONFIG.packagingLabel||'Caja para llevar'}: ${cartCount()} × ${fmt(CONFIG.packagingFee||0)}\n`;
+    if (packaging > 0) msg += `\n🥤 ${CONFIG.packagingLabel||'Caja para llevar'}: ${packagingEligibleCount()} × ${fmt(CONFIG.packagingFee||0)}\n`;
     msg += `\n${paymentLines}\n`;
     msg += `\n💰 Total: ${fmt(total)}`;
   }
