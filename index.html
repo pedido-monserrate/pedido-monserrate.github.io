@@ -212,6 +212,19 @@
         🪑 No manejamos reservas de mesa: al llegar, si no hay una libre, debes esperar a que se desocupe.
       </div>
 
+      <div id="cf-dinein-time-wrap" class="mb-3">
+        <label class="text-xs font-semibold muted block mb-1">¿A qué hora quieres que esté lista tu comida?</label>
+        <select id="cf-dinein-time" class="w-full rounded-xl px-3 py-2 text-sm surface" style="color:var(--text);">
+          <option value="">Selecciona una hora</option>
+          <option value="7:00 pm">7:00 pm</option>
+          <option value="7:30 pm">7:30 pm</option>
+          <option value="8:00 pm">8:00 pm</option>
+          <option value="8:30 pm">8:30 pm</option>
+          <option value="9:00 pm">9:00 pm</option>
+          <option value="9:30 pm">9:30 pm</option>
+        </select>
+      </div>
+
       <div id="cf-zone-wrap" class="mb-3">
         <label class="text-xs font-semibold muted block mb-1">Zona de entrega</label>
         <div class="grid grid-cols-2 gap-2">
@@ -222,7 +235,7 @@
 
       <div id="cf-address-wrap" class="mb-3">
         <label class="text-xs font-semibold muted block mb-1">Dirección de entrega</label>
-        <textarea id="cf-address" rows="2" placeholder="Dirección, un punto de referencia cercano, el color de tu casa y si es primer o segundo piso" class="w-full rounded-xl px-3 py-2 text-sm surface resize-none" style="color:var(--text);"></textarea>
+        <textarea id="cf-address" rows="2" placeholder="Barrio, punto de referencia cercano, características de la casa (color y pisos)" class="w-full rounded-xl px-3 py-2 text-sm surface resize-none" style="color:var(--text);"></textarea>
         <button type="button" onclick="shareLocation()" id="cf-location-btn" class="w-full text-sm font-bold brand-text border-2 brand-border rounded-2xl py-2.5 mt-2">📍 Compartir mi ubicación exacta (opcional)</button>
         <p class="text-[11px] muted mt-1.5 leading-relaxed">Ayuda al domiciliario a llegar directo a tu casa. También puedes enviarnos una foto de la fachada por este mismo chat de WhatsApp.</p>
       </div>
@@ -984,6 +997,7 @@ function applyDeliveryUI(){
   document.getElementById('cf-address-wrap').style.display = deliveryType === 'delivery' ? 'block' : 'none';
   document.getElementById('cf-zone-wrap').style.display = deliveryType === 'delivery' ? 'block' : 'none';
   document.getElementById('cf-dinein-note').style.display = deliveryType === 'dinein' ? 'block' : 'none';
+  document.getElementById('cf-dinein-time-wrap').style.display = deliveryType === 'dinein' ? 'block' : 'none';
   renderDeliveryZoneButtons();
 }
 function renderDeliveryZoneButtons(){
@@ -1174,12 +1188,14 @@ async function sendOrderToWhatsApp(){
   const name = document.getElementById('cf-name').value.trim();
   const phone = document.getElementById('cf-phone').value.trim();
   const address = document.getElementById('cf-address').value.trim();
+  const dineInTime = document.getElementById('cf-dinein-time').value;
   const method = findPaymentMethod(selectedPaymentId);
 
   if (!name){ alert('Por favor ingresa tu nombre.'); return; }
   if (!phone){ alert('Por favor ingresa tu teléfono.'); return; }
   if (deliveryType === 'delivery' && !address){ alert('Por favor ingresa la dirección de entrega.'); return; }
   if (deliveryType === 'delivery' && !deliveryZone){ alert('Por favor selecciona la zona de entrega: zona rural o zona urbana.'); return; }
+  if (deliveryType === 'dinein' && !dineInTime){ alert('Por favor selecciona a qué hora quieres que esté lista tu comida.'); return; }
 
   const sendBtn = document.getElementById('cf-send-btn');
   sendBtn.disabled = true;
@@ -1233,6 +1249,7 @@ async function sendOrderToWhatsApp(){
     msg = `🍽️ NUEVO PEDIDO PARA COMER AQUÍ ${orderTag}\n\n`;
     msg += `👤 Cliente: ${name}\n`;
     if (phone) msg += `📞 Teléfono: ${phone}\n`;
+    msg += `🕖 Hora deseada: ${dineInTime}\n`;
     msg += `\n🍔 Pedido\n${itemLines}\n`;
     msg += `\n${paymentLines}\n`;
     msg += `\n💰 Total: ${fmt(total)}\n\n`;
