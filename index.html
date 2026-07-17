@@ -402,6 +402,18 @@
 
       <div class="admin-section-title">Menú — categorías y productos</div>
       <div class="admin-field mb-3"><label>Foto banner "Opción Infantil" (URL, opcional)</label><input id="adm-kids-banner" placeholder="https://..."></div>
+      <div class="admin-field mb-3">
+        <label>Disponibilidad de acompañamiento (Alitas)</label>
+        <div class="flex gap-4 mt-1">
+          <label class="flex items-center gap-1.5 text-xs font-semibold text-gray-600">
+            <input id="adm-side-crunch" type="checkbox" style="width:auto;"> 🍟 Papas Crunch disponible
+          </label>
+          <label class="flex items-center gap-1.5 text-xs font-semibold text-gray-600">
+            <input id="adm-side-amarillas" type="checkbox" style="width:auto;"> 🍟 Papas Amarillas disponible
+          </label>
+        </div>
+        <p class="text-[11px] text-gray-400 mt-1">Si desmarcas una, el cliente no podrá elegirla al pedir Alitas hasta que la vuelvas a marcar.</p>
+      </div>
       <div id="adm-menu-list" class="space-y-4"></div>
       <div class="flex gap-2 mt-3">
         <input id="adm-new-cat" placeholder="Nombre de la nueva categoría (ej. Bebidas)" class="flex-1 border border-gray-200 rounded-xl px-3 py-2 text-sm">
@@ -468,6 +480,7 @@ const DEFAULT_CONFIG = {
   ],
   promo: { enabled: true, title: "Combo Semana", desc: "Hamburguesa + Papas + Bebida personal", price: 28900, image: "https://i.postimg.cc/fb56D3tR/combo-de-la-semana.png" },
   kidsMenuBannerImage: "https://i.postimg.cc/hvrQ7mX8/banner-kids.png",
+  sideAvailability: { crunch: true, amarillas: true },
   paymentMethods: [
     { id: "efectivo", label: "Efectivo", number: "", note: "", isCash: true },
     { id: "llave", label: "Llave Bancolombia", number: "@monserrate", note: "", image: "" },
@@ -931,12 +944,21 @@ function renderSideOption(id, qty){
   if (!el) return;
   const item = findItem(id);
   if (!item || !item.hasSideChoice || qty === 0){ el.innerHTML = ''; return; }
-  if (!cartSide[id]) cartSide[id] = 'crunch';
+  const avail = CONFIG.sideAvailability || { crunch: true, amarillas: true };
   const opts = [['crunch','Papas Crunch'], ['amarillas','Papas Amarillas']];
+  const availableVals = opts.filter(([val]) => avail[val] !== false).map(([val]) => val);
+  if (!cartSide[id] || !availableVals.includes(cartSide[id])){
+    cartSide[id] = availableVals[0] || opts[0][0];
+  }
   el.innerHTML = `
     <div class="text-[11px] font-semibold muted mt-2 mb-1">🍟 Elige acompañamiento:</div>
     <div class="flex gap-1.5">
-      ${opts.map(([val,label]) => `<button onclick="setSide('${id}','${val}')" class="flex-1 text-[11px] font-semibold px-2 py-1.5 rounded-lg ${cartSide[id]===val ? 'brand-bg text-white' : 'surface muted'}">${label}</button>`).join('')}
+      ${opts.map(([val,label]) => {
+        if (avail[val] === false){
+          return `<button disabled class="flex-1 text-[11px] font-semibold px-2 py-1.5 rounded-lg surface muted opacity-40 cursor-not-allowed">${label} (Agotado)</button>`;
+        }
+        return `<button onclick="setSide('${id}','${val}')" class="flex-1 text-[11px] font-semibold px-2 py-1.5 rounded-lg ${cartSide[id]===val ? 'brand-bg text-white' : 'surface muted'}">${label}</button>`;
+      }).join('')}
     </div>`;
 }
 function setSide(id, val){
@@ -1447,6 +1469,9 @@ function renderAdminForm(){
   document.getElementById('adm-promo-fullimage').checked = !!c.promo.fullImage;
   document.getElementById('adm-promo-image').value = c.promo.image || '';
   document.getElementById('adm-kids-banner').value = c.kidsMenuBannerImage || '';
+  c.sideAvailability = c.sideAvailability || { crunch: true, amarillas: true };
+  document.getElementById('adm-side-crunch').checked = c.sideAvailability.crunch !== false;
+  document.getElementById('adm-side-amarillas').checked = c.sideAvailability.amarillas !== false;
   document.getElementById('adm-agency-name').value = c.agencyName || '';
   document.getElementById('adm-agency-url').value = c.agencyUrl || '';
   document.getElementById('adm-pin').value = c.adminPin || '1234';
@@ -1478,6 +1503,8 @@ function renderAdminForm(){
   document.getElementById('adm-promo-desc').oninput = e => { DRAFT.config.promo.desc = e.target.value; };
   document.getElementById('adm-promo-price').oninput = e => { DRAFT.config.promo.price = Number(e.target.value)||0; };
   document.getElementById('adm-promo-image').oninput = e => { DRAFT.config.promo.image = e.target.value; };
+  document.getElementById('adm-side-crunch').onchange = e => { DRAFT.config.sideAvailability.crunch = e.target.checked; };
+  document.getElementById('adm-side-amarillas').onchange = e => { DRAFT.config.sideAvailability.amarillas = e.target.checked; };
 
   renderAdminClosedDays();
   renderAdminHours();
