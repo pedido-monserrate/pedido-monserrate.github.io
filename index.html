@@ -272,7 +272,8 @@
       </div>
       <div class="font-display font-bold text-lg">¡Pedido enviado!</div>
       <p class="text-xs muted mt-1">Te escribimos por WhatsApp para confirmar tu pedido.</p>
-      <button onclick="closeModal('cart-modal')" class="mt-6 w-full brand-grad text-white font-bold rounded-2xl py-3">Cerrar</button>
+      <a id="cart-sent-wa-link" href="#" target="_blank" class="mt-4 w-full bg-green-500 hover:bg-green-600 text-white font-bold rounded-2xl py-3 flex items-center justify-center gap-2">📲 Si no se abrió solo, toca aquí para enviarlo por WhatsApp</a>
+      <button onclick="closeModal('cart-modal')" class="mt-3 w-full brand-grad text-white font-bold rounded-2xl py-3">Cerrar</button>
     </div>
   </div>
 </div>
@@ -1225,6 +1226,12 @@ async function sendOrderToWhatsApp(){
   if (deliveryType === 'delivery' && !deliveryZone){ alert('Por favor selecciona la zona de entrega: zona rural o zona urbana.'); return; }
   if (deliveryType === 'dinein' && !dineInTime){ alert('Por favor selecciona a qué hora quieres que esté lista tu comida.'); return; }
 
+  // Abrimos la pestaña YA (todavía dentro del clic del usuario), antes de cualquier
+  // espera async — si esperamos a que termine la consulta a la nube para abrirla,
+  // el navegador la trata como una ventana emergente no solicitada y la bloquea
+  // en silencio (por eso a veces decía "enviado" pero WhatsApp nunca se abría).
+  const waWindow = window.open('', '_blank');
+
   const sendBtn = document.getElementById('cf-send-btn');
   sendBtn.disabled = true;
   const originalBtnText = sendBtn.textContent;
@@ -1293,7 +1300,12 @@ async function sendOrderToWhatsApp(){
   }
 
   const url = `https://wa.me/${CONFIG.whatsappNumber}?text=${encodeURIComponent(msg)}`;
-  window.open(url, '_blank');
+  if (waWindow){
+    waWindow.location.href = url;
+  } else {
+    window.open(url, '_blank');
+  }
+  document.getElementById('cart-sent-wa-link').href = url;
 
   cart = {};
   cartNotes = {};
