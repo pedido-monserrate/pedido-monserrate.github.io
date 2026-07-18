@@ -253,6 +253,10 @@
       <div class="text-xs font-semibold muted mb-1 uppercase tracking-wide">Métodos de pago</div>
       <div id="cf-payment-grid" class="grid grid-cols-3 gap-2 mb-4"></div>
       <div id="cf-payment-note" class="hidden text-xs rounded-xl p-3 leading-relaxed mb-3 surface muted"></div>
+      <div id="cf-cash-change-wrap" class="hidden mb-3">
+        <label class="text-xs font-semibold muted block mb-1">¿Con qué billete vas a pagar? (para saber cuánto vuelto llevar)</label>
+        <input id="cf-cash-change" type="text" placeholder="Ej. Pago con un billete de $50.000" class="w-full rounded-xl px-3 py-2 text-sm surface" style="color:var(--text);">
+      </div>
 
       <div class="text-sm space-y-1 mb-4">
         <div class="flex justify-between"><span class="muted">Subtotal</span><span id="cart-subtotal">$0</span></div>
@@ -1133,7 +1137,9 @@ function findPaymentMethod(id){
 }
 function updatePaymentNote(){
   const note = document.getElementById('cf-payment-note');
+  const cashChangeWrap = document.getElementById('cf-cash-change-wrap');
   const method = findPaymentMethod(selectedPaymentId);
+  cashChangeWrap.classList.toggle('hidden', !method || !method.isCash);
   if (!method || method.isCash){ note.classList.add('hidden'); note.innerHTML=''; return; }
   note.classList.remove('hidden');
   note.innerHTML = `Pagas a <b class="text-white">${esc(method.label)}</b>:
@@ -1244,6 +1250,7 @@ async function sendOrderToWhatsApp(){
   const phone = document.getElementById('cf-phone').value.trim();
   const address = document.getElementById('cf-address').value.trim();
   const dineInTime = document.getElementById('cf-dinein-time').value;
+  const cashChange = document.getElementById('cf-cash-change').value.trim();
   const method = findPaymentMethod(selectedPaymentId);
 
   if (!name){ alert('Por favor ingresa tu nombre.'); return; }
@@ -1251,6 +1258,7 @@ async function sendOrderToWhatsApp(){
   if (deliveryType === 'delivery' && !address){ alert('Por favor ingresa la dirección de entrega.'); return; }
   if (deliveryType === 'delivery' && !deliveryZone){ alert('Por favor selecciona la zona de entrega: zona rural o zona urbana.'); return; }
   if (deliveryType === 'dinein' && !dineInTime){ alert('Por favor selecciona a qué hora quieres que esté lista tu comida.'); return; }
+  if (method && method.isCash && !cashChange){ alert('Por favor indica con qué billete vas a pagar, para saber cuánto vuelto llevar.'); return; }
 
   // Abrimos la pestaña YA (todavía dentro del clic del usuario), antes de cualquier
   // espera async — si esperamos a que termine la consulta a la nube para abrirla,
@@ -1289,7 +1297,7 @@ async function sendOrderToWhatsApp(){
     return line;
   }).filter(Boolean).join('\n');
   const paymentLines = (!method || method.isCash)
-    ? `💳 Pago: Contra entrega`
+    ? `💳 Pago: Contra entrega\n💵 Paga con: ${cashChange}`
     : `💳 Pago: ${method.label}\n${method.label}: ${method.number}\n_Enviaré el comprobante por este mismo chat._`;
 
   let msg;
