@@ -495,8 +495,8 @@ const DEFAULT_CONFIG = {
 // las listas sí conservan el orden al guardarse y leerse desde Firestore.
 const DEFAULT_MENU = [
   { name: "Opción Infantil", items: [
-    { id: "k1", name: "Cajita Feliz - Mini Hamburguesa", desc: "Pan artesanal, carne artesanal, queso mozzarella, ripio, salsas. Incluye papitas Crunch, juguito en caja, masmelito, salsa de tomate + juguete sorpresa (niño o niña).", price: 28000, emoji: "🍔", bg: "#332a12", image: "" },
-    { id: "k2", name: "Cajita Feliz - Nuggets de Pollo", desc: "4 nuggets de pollo con salsa BBQ dulce. Incluye papitas Crunch, juguito en caja, masmelito, salsa de tomate + juguete sorpresa (niño o niña).", price: 28000, emoji: "🍗", bg: "#332a12", image: "" }
+    { id: "k1", name: "Cajita Feliz - Mini Hamburguesa", desc: "Pan artesanal, carne artesanal, queso mozzarella, ripio, salsas. Incluye papitas Crunch, juguito en caja, masmelito, salsa de tomate + juguete sorpresa (niño o niña).", price: 28000, emoji: "🍔", bg: "#332a12", image: "", hasGenderChoice: true },
+    { id: "k2", name: "Cajita Feliz - Nuggets de Pollo", desc: "4 nuggets de pollo con salsa BBQ dulce. Incluye papitas Crunch, juguito en caja, masmelito, salsa de tomate + juguete sorpresa (niño o niña).", price: 28000, emoji: "🍗", bg: "#332a12", image: "", hasGenderChoice: true }
   ]},
   { name: "Hamburguesas", items: [
     { id: "h1", name: "Clásica", desc: "Pan artesanal, carne artesanal, queso mozzarella, lechuga, cebolla caramelizada, aros de cebolla, salsa BBQ, mostaza.", price: 20000, emoji: "🍔", bg: "#3a2b12", image: "" },
@@ -594,6 +594,7 @@ let cart = {};
 let cartNotes = {};
 let cartJalapeno = {};
 let cartSide = {};
+let cartGender = {};
 let deliveryLocationUrl = '';
 let deliveryType = 'delivery';
 let deliveryZone = null;
@@ -871,6 +872,7 @@ function renderMenu(){
           </div>
           <div id="mjalapeno-${item.id}"></div>
           <div id="mside-${item.id}"></div>
+          <div id="mgender-${item.id}"></div>
           ${cat.name === 'Bebidas Frías' ? '' : `<div id="mnote-${item.id}"></div>`}
         </div>
       `;
@@ -916,6 +918,7 @@ function renderControl(id){
   }
   renderJalapenoOption(id, qty);
   renderSideOption(id, qty);
+  renderGenderOption(id, qty);
   renderMenuNote(id, qty);
 }
 
@@ -970,6 +973,27 @@ function sideLabel(val){
   return { crunch: 'Papas Crunch', amarillas: 'Papas Amarillas' }[val] || '';
 }
 
+function renderGenderOption(id, qty){
+  const el = document.getElementById('mgender-'+id);
+  if (!el) return;
+  const item = findItem(id);
+  if (!item || !item.hasGenderChoice || qty === 0){ el.innerHTML = ''; return; }
+  if (!cartGender[id]) cartGender[id] = 'nino';
+  const opts = [['nino','Niño'], ['nina','Niña']];
+  el.innerHTML = `
+    <div class="text-[11px] font-semibold muted mt-2 mb-1">🧒 Juguete sorpresa para:</div>
+    <div class="flex gap-1.5">
+      ${opts.map(([val,label]) => `<button onclick="setGender('${id}','${val}')" class="flex-1 text-[11px] font-semibold px-2 py-1.5 rounded-lg ${cartGender[id]===val ? 'brand-bg text-white' : 'surface muted'}">${label}</button>`).join('')}
+    </div>`;
+}
+function setGender(id, val){
+  cartGender[id] = val;
+  renderGenderOption(id, cart[id]||0);
+}
+function genderLabel(val){
+  return { nino: 'Niño', nina: 'Niña' }[val] || '';
+}
+
 function renderMenuNote(id, qty){
   const el = document.getElementById('mnote-'+id);
   if (!el) return;
@@ -990,11 +1014,11 @@ function addItem(id){
 function removeItem(id){
   if (!cart[id]) return;
   cart[id] -= 1;
-  if (cart[id] <= 0){ delete cart[id]; delete cartNotes[id]; delete cartJalapeno[id]; delete cartSide[id]; }
+  if (cart[id] <= 0){ delete cart[id]; delete cartNotes[id]; delete cartJalapeno[id]; delete cartSide[id]; delete cartGender[id]; }
   renderControl(id);
   updateCartBar();
 }
-function trashCartItem(id){ delete cart[id]; delete cartNotes[id]; delete cartJalapeno[id]; delete cartSide[id]; renderControl(id); updateCartBar(); renderCart(); }
+function trashCartItem(id){ delete cart[id]; delete cartNotes[id]; delete cartJalapeno[id]; delete cartSide[id]; delete cartGender[id]; renderControl(id); updateCartBar(); renderCart(); }
 function updateCartNote(id, value){ cartNotes[id] = value; }
 function cartCount(){ return Object.values(cart).reduce((a,b)=>a+b,0); }
 function cartSubtotal(){ return Object.entries(cart).reduce((s,[id,qty]) => { const it = findItem(id); return it ? s + it.price*qty : s; }, 0); }
@@ -1048,7 +1072,7 @@ function selectDeliveryType(type){
     Object.keys(cart).forEach(id => {
       const item = findItem(id);
       if (item && isDineInOnly(item)){
-        delete cart[id]; delete cartNotes[id]; delete cartJalapeno[id]; delete cartSide[id];
+        delete cart[id]; delete cartNotes[id]; delete cartJalapeno[id]; delete cartSide[id]; delete cartGender[id];
       }
     });
   }
@@ -1146,6 +1170,7 @@ function renderCart(){
     const note = (cartNotes[id]||'').trim();
     const jalapeno = item.hasJalapeno ? jalapenoLabel(cartJalapeno[id]) : '';
     const side = item.hasSideChoice ? sideLabel(cartSide[id]) : '';
+    const gender = item.hasGenderChoice ? genderLabel(cartGender[id]) : '';
     return `<div class="py-2" style="border-bottom:1px solid var(--border);">
       <div class="flex items-center justify-between text-sm">
         <div class="min-w-0">
@@ -1153,6 +1178,7 @@ function renderCart(){
           <div class="text-xs muted">${fmt(item.price)} c/u</div>
           ${jalapeno ? `<div class="text-xs mt-1 brand-text">🌶️ ${esc(jalapeno)}</div>` : ''}
           ${side ? `<div class="text-xs mt-1 brand-text">🍟 ${esc(side)}</div>` : ''}
+          ${gender ? `<div class="text-xs mt-1 brand-text">🧒 ${esc(gender)}</div>` : ''}
           ${note ? `<div class="text-xs mt-1 brand-text">✏️ ${esc(note)}</div>` : ''}
         </div>
         <div class="flex items-center gap-3 flex-shrink-0">
@@ -1254,9 +1280,11 @@ async function sendOrderToWhatsApp(){
     const note = (cartNotes[id]||'').trim();
     const jalapeno = item.hasJalapeno ? jalapenoLabel(cartJalapeno[id]) : '';
     const side = item.hasSideChoice ? sideLabel(cartSide[id]) : '';
+    const gender = item.hasGenderChoice ? genderLabel(cartGender[id]) : '';
     let line = `• ${qty} × ${item.name} — ${fmt(item.price*qty)}`;
     if (jalapeno) line += `\n   Picante: ${jalapeno}`;
     if (side) line += `\n   Acompañamiento: ${side}`;
+    if (gender) line += `\n   Juguete sorpresa para: ${gender}`;
     if (note) line += `\n   Nota: ${note}`;
     return line;
   }).filter(Boolean).join('\n');
@@ -1311,6 +1339,7 @@ async function sendOrderToWhatsApp(){
   cartNotes = {};
   cartJalapeno = {};
   cartSide = {};
+  cartGender = {};
   deliveryLocationUrl = '';
   deliveryZone = null;
   document.getElementById('cart-body').classList.add('hidden');
@@ -1443,6 +1472,7 @@ function admFactoryReset(){
   cartNotes = {};
   cartJalapeno = {};
   cartSide = {};
+  cartGender = {};
   closeModal('admin-modal');
   renderAll();
 }
@@ -1635,6 +1665,10 @@ function renderAdminMenu(){
               <input type="checkbox" ${item.hasSideChoice ? 'checked' : ''} style="width:auto;" data-catidx="${catIdx}" data-idx="${idx}" data-boolfield="hasSideChoice">
               🍟 Ofrece elegir acompañamiento (papas Crunch / Amarillas)
             </label>
+            <label class="flex items-center gap-1.5 text-xs font-semibold ${item.hasGenderChoice ? 'text-amber-500' : 'text-gray-500'}">
+              <input type="checkbox" ${item.hasGenderChoice ? 'checked' : ''} style="width:auto;" data-catidx="${catIdx}" data-idx="${idx}" data-boolfield="hasGenderChoice">
+              🧒 Ofrece elegir juguete sorpresa (niño / niña)
+            </label>
           </div>
         `).join('')}
       </div>
@@ -1653,7 +1687,7 @@ function renderAdminMenu(){
     inp.onchange = e => {
       const catIdx = Number(e.target.dataset.catidx), idx = Number(e.target.dataset.idx), field = e.target.dataset.boolfield;
       DRAFT.menu[catIdx].items[idx][field] = e.target.checked;
-      const activeColor = field === 'comingSoon' ? 'text-sky-500' : (field === 'hasJalapeno' || field === 'hasSideChoice') ? 'text-amber-500' : 'text-red-500';
+      const activeColor = field === 'comingSoon' ? 'text-sky-500' : (field === 'hasJalapeno' || field === 'hasSideChoice' || field === 'hasGenderChoice') ? 'text-amber-500' : 'text-red-500';
       const label = e.target.closest('label');
       label.classList.toggle(activeColor, e.target.checked);
       label.classList.toggle('text-gray-500', !e.target.checked);
@@ -1728,6 +1762,7 @@ async function saveAdmin(){
   cartNotes = {};
   cartJalapeno = {};
   cartSide = {};
+  cartGender = {};
   renderAll();
 
   if (firebaseEnabled){
