@@ -235,7 +235,18 @@
 
       <div id="cf-address-wrap" class="mb-3">
         <label class="text-xs font-semibold muted block mb-1">Dirección de entrega</label>
-        <textarea id="cf-address" rows="2" placeholder="Barrio, punto de referencia cercano, características de la casa (color y pisos)" class="w-full rounded-xl px-3 py-2 text-sm surface resize-none" style="color:var(--text);"></textarea>
+        <div class="mb-2">
+          <label class="text-[11px] font-semibold muted block mb-1">Barrio</label>
+          <input id="cf-barrio" type="text" placeholder="Ej. Villa del Río" class="w-full rounded-xl px-3 py-2 text-sm surface" style="color:var(--text);">
+        </div>
+        <div class="mb-2">
+          <label class="text-[11px] font-semibold muted block mb-1">Punto de referencia cercano</label>
+          <input id="cf-referencia" type="text" placeholder="Ej. al lado de la tienda Don José" class="w-full rounded-xl px-3 py-2 text-sm surface" style="color:var(--text);">
+        </div>
+        <div>
+          <label class="text-[11px] font-semibold muted block mb-1">Características de la casa (color y pisos)</label>
+          <input id="cf-casa" type="text" placeholder="Ej. casa azul, segundo piso" class="w-full rounded-xl px-3 py-2 text-sm surface" style="color:var(--text);">
+        </div>
         <button type="button" onclick="shareLocation()" id="cf-location-btn" class="w-full text-sm font-bold brand-text border-2 brand-border rounded-2xl py-2.5 mt-2">📍 Compartir mi ubicación exacta (opcional)</button>
         <p class="text-[11px] muted mt-1.5 leading-relaxed">Ayuda al domiciliario a llegar directo a tu casa. También puedes enviarnos una foto de la fachada por este mismo chat de WhatsApp.</p>
       </div>
@@ -1248,14 +1259,18 @@ async function getNextOrderNumber(){
 async function sendOrderToWhatsApp(){
   const name = document.getElementById('cf-name').value.trim();
   const phone = document.getElementById('cf-phone').value.trim();
-  const address = document.getElementById('cf-address').value.trim();
+  const barrio = document.getElementById('cf-barrio').value.trim();
+  const referencia = document.getElementById('cf-referencia').value.trim();
+  const casa = document.getElementById('cf-casa').value.trim();
   const dineInTime = document.getElementById('cf-dinein-time').value;
   const cashChange = document.getElementById('cf-cash-change').value.trim();
   const method = findPaymentMethod(selectedPaymentId);
 
   if (!name){ alert('Por favor ingresa tu nombre.'); return; }
   if (!phone){ alert('Por favor ingresa tu teléfono.'); return; }
-  if (deliveryType === 'delivery' && !address){ alert('Por favor ingresa la dirección de entrega.'); return; }
+  if (deliveryType === 'delivery' && !barrio){ alert('Por favor ingresa el barrio.'); return; }
+  if (deliveryType === 'delivery' && !referencia){ alert('Por favor ingresa un punto de referencia cercano.'); return; }
+  if (deliveryType === 'delivery' && !casa){ alert('Por favor ingresa las características de la casa (color y pisos).'); return; }
   if (deliveryType === 'delivery' && !deliveryZone){ alert('Por favor selecciona la zona de entrega: zona rural o zona urbana.'); return; }
   if (deliveryType === 'dinein' && !dineInTime){ alert('Por favor selecciona a qué hora quieres que esté lista tu comida.'); return; }
   if (method && method.isCash && !cashChange){ alert('Por favor indica con qué billete vas a pagar, para saber cuánto vuelto llevar.'); return; }
@@ -1304,7 +1319,9 @@ async function sendOrderToWhatsApp(){
   if (deliveryType === 'delivery'){
     msg = `🍔 NUEVO PEDIDO DOMICILIO ${orderTag}\n\n`;
     msg += `👤 Cliente: ${name}\n`;
-    msg += `📍 Dirección: ${address}\n`;
+    msg += `📍 Barrio: ${barrio}\n`;
+    msg += `🧭 Punto de referencia: ${referencia}\n`;
+    msg += `🏠 Características de la casa: ${casa}\n`;
     if (deliveryLocationUrl) msg += `📌 Ubicación exacta: ${deliveryLocationUrl}\n`;
     msg += `${divider}\n`;
     msg += `🛒 Pedido\n${itemLines}\n`;
