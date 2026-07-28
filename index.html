@@ -227,7 +227,7 @@
       </button>
 
       <div id="cf-table-note" class="hidden mb-4 text-sm font-bold text-center rounded-2xl py-3 surface brand-text">
-        🪑 Pedido para la Mesa <span id="cf-table-number"></span>
+        <span id="cf-table-emoji">🪑</span> Pedido para la <span id="cf-table-label">Mesa</span> <span id="cf-table-number"></span>
       </div>
 
       <button onclick="closeModal('cart-modal')" class="w-full text-sm font-bold brand-text border-2 brand-border rounded-2xl py-2.5 mb-4 flex items-center justify-center gap-2">← Seguir agregando productos</button>
@@ -635,7 +635,10 @@ let deliveryType = 'delivery';
 // Si la URL trae ?mesa=1 (o mesa=2, 3, 4, 5...) el cliente llegó escaneando el QR
 // de esa mesa: saltamos la pantalla de selección y vamos directo al pedido,
 // y el número de mesa viaja siempre en el mensaje de WhatsApp.
-const TABLE_NUMBER = new URLSearchParams(window.location.search).get('mesa');
+const params = new URLSearchParams(window.location.search);
+const TABLE_NUMBER = params.get('mesa') || params.get('barra');
+const LOCATION_LABEL = params.get('barra') ? 'Barra' : 'Mesa';
+const LOCATION_EMOJI = params.get('barra') ? '🍹' : '🪑';
 let tableModeStarted = false;
 let deliveryZone = null;
 let cloudDataLoaded = false;
@@ -820,7 +823,7 @@ function initTableMode(){
   document.body.classList.add('table-mode');
   const banner = document.getElementById('table-banner');
   if (banner){
-    banner.textContent = `🪑 Pedido para la Mesa ${TABLE_NUMBER}`;
+    banner.textContent = `${LOCATION_EMOJI} Pedido para la ${LOCATION_LABEL} ${TABLE_NUMBER}`;
     banner.classList.remove('hidden');
   }
   startOrder('mesa');
@@ -1104,7 +1107,11 @@ function applyDeliveryUI(){
   document.getElementById('cart-delivery-type-picker').style.display = isTable ? 'none' : 'grid';
   document.getElementById('dt-dinein').style.display = isTable ? 'none' : 'block';
   document.getElementById('cf-table-note').classList.toggle('hidden', !isTable);
-  if (isTable) document.getElementById('cf-table-number').textContent = TABLE_NUMBER;
+  if (isTable){
+    document.getElementById('cf-table-number').textContent = TABLE_NUMBER;
+    document.getElementById('cf-table-label').textContent = LOCATION_LABEL;
+    document.getElementById('cf-table-emoji').textContent = LOCATION_EMOJI;
+  }
   document.getElementById('cf-phone-wrap').style.display = isTable ? 'none' : 'block';
   document.getElementById('cf-payment-section').style.display = isTable ? 'none' : 'block';
 
@@ -1377,11 +1384,11 @@ async function sendOrderToWhatsApp(){
     msg += `${paymentLines}\n`;
     msg += `📞 Teléfono:\n${phone}`;
   } else if (deliveryType === 'mesa'){
-    msg = `🪑 NUEVO PEDIDO — MESA ${TABLE_NUMBER} ${orderTag}\n\n`;
+    msg = `${LOCATION_EMOJI} NUEVO PEDIDO — ${LOCATION_LABEL.toUpperCase()} ${TABLE_NUMBER} ${orderTag}\n\n`;
     msg += `👤 Cliente: ${name}\n`;
     msg += `\n🍔 Pedido\n${itemLines}\n`;
     msg += `\n💰 Total: ${fmt(total)}\n\n`;
-    msg += `🪑 Mesa: ${TABLE_NUMBER}`;
+    msg += `${LOCATION_EMOJI} ${LOCATION_LABEL}: ${TABLE_NUMBER}`;
   } else if (deliveryType === 'dinein'){
     msg = `🍽️ NUEVO PEDIDO PARA COMER AQUÍ ${orderTag}\n\n`;
     msg += `👤 Cliente: ${name}\n`;
