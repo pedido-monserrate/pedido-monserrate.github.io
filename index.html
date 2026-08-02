@@ -1647,9 +1647,7 @@ function renderAdminMenu(){
       <div class="space-y-2">
         ${catObj.items.map((item, idx) => `
           <div class="bg-gray-50 rounded-xl p-2 space-y-1.5">
-            <div class="flex gap-2 items-center">
-              <button data-itemup="${catIdx}::${idx}" title="Mover arriba" class="text-gray-400 text-sm px-1">▲</button>
-              <button data-itemdown="${catIdx}::${idx}" title="Mover abajo" class="text-gray-400 text-sm px-1">▼</button>
+            <div class="flex gap-2">
               <input value="${esc(item.name)}" placeholder="Nombre del producto" class="flex-1 border border-gray-200 rounded-lg px-2 py-1.5 text-xs" data-catidx="${catIdx}" data-idx="${idx}" data-field="name">
               <input value="${item.price}" type="number" min="0" step="500" placeholder="Precio" class="w-24 border border-gray-200 rounded-lg px-2 py-1.5 text-xs" data-catidx="${catIdx}" data-idx="${idx}" data-field="price">
               <button data-itemdelete="${catIdx}::${idx}" class="text-red-400 text-sm px-1">✕</button>
@@ -1718,12 +1716,6 @@ function renderAdminMenu(){
   wrap.querySelectorAll('[data-itemdelete]').forEach(btn => {
     btn.onclick = () => { const [catIdx, idx] = btn.dataset.itemdelete.split('::').map(Number); admRemoveItem(catIdx, idx); };
   });
-  wrap.querySelectorAll('[data-itemup]').forEach(btn => {
-    btn.onclick = () => { const [catIdx, idx] = btn.dataset.itemup.split('::').map(Number); admMoveItem(catIdx, idx, -1); };
-  });
-  wrap.querySelectorAll('[data-itemdown]').forEach(btn => {
-    btn.onclick = () => { const [catIdx, idx] = btn.dataset.itemdown.split('::').map(Number); admMoveItem(catIdx, idx, 1); };
-  });
   wrap.querySelectorAll('[data-additem]').forEach(btn => {
     btn.onclick = () => admAddItem(Number(btn.dataset.additem));
   });
@@ -1753,13 +1745,6 @@ function admMoveCategory(catIdx, dir){
   const j = catIdx + dir;
   if (j < 0 || j >= DRAFT.menu.length) return;
   [DRAFT.menu[catIdx], DRAFT.menu[j]] = [DRAFT.menu[j], DRAFT.menu[catIdx]];
-  renderAdminMenu();
-}
-function admMoveItem(catIdx, idx, dir){
-  const items = DRAFT.menu[catIdx].items;
-  const j = idx + dir;
-  if (j < 0 || j >= items.length) return;
-  [items[idx], items[j]] = [items[j], items[idx]];
   renderAdminMenu();
 }
 function admAddItem(catIdx){
