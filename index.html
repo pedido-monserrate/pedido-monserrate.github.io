@@ -985,20 +985,20 @@ function renderControl(id){
 }
 
 // Solo aplica en modo Mesa/Barra (pedidos desde QR): por defecto todo es "para
-// comer aquí"; el cliente solo lo cambia si ESE producto puntual es para llevar.
+// comer aquí"; el cliente solo lo marca si ESE producto puntual es para llevar.
 function renderTakeawayOption(id, qty){
   const el = document.getElementById('mtakeaway-'+id);
   if (!el) return;
   if (deliveryType !== 'mesa' || qty === 0){ el.innerHTML = ''; return; }
   if (!cartTakeaway[id]) cartTakeaway[id] = 'aqui';
-  const opts = [['aqui','🍽️ Comer aquí'], ['llevar','🥡 Para llevar']];
+  const active = cartTakeaway[id] === 'llevar';
   el.innerHTML = `
-    <div class="flex gap-1.5 mt-2">
-      ${opts.map(([val,label]) => `<button onclick="setTakeaway('${id}','${val}')" class="flex-1 text-[11px] font-semibold px-2 py-1.5 rounded-lg ${cartTakeaway[id]===val ? 'brand-bg text-white' : 'surface muted'}">${label}</button>`).join('')}
+    <div class="mt-2">
+      <button onclick="toggleTakeaway('${id}')" class="text-[11px] font-semibold px-2.5 py-1.5 rounded-lg ${active ? 'brand-bg text-white' : 'surface muted'}">🥡 Para llevar</button>
     </div>`;
 }
-function setTakeaway(id, val){
-  cartTakeaway[id] = val;
+function toggleTakeaway(id){
+  cartTakeaway[id] = cartTakeaway[id] === 'llevar' ? 'aqui' : 'llevar';
   renderTakeawayOption(id, cart[id]||0);
 }
 
