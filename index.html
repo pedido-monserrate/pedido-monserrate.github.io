@@ -60,6 +60,17 @@
     Modo demostración: los cambios del panel se guardan solo en este navegador. Ver <b>ADMIN-SETUP.md</b> para activar el guardado en la nube.
   </div>
 
+  <div id="table-banner" class="hidden brand-bg text-white text-sm font-bold text-center py-2 px-3 leading-tight"></div>
+
+  <style>
+    /* En modo mesa (llegó por QR) ocultamos la pantalla de "¿cómo deseas tu pedido?"
+       porque ya sabemos que es para comer en la mesa escaneada, y mostramos en su
+       lugar un botón directo para hacer el pedido. */
+    body.table-mode #order-type-section,
+    body.table-mode #order-type-cards { display:none !important; }
+    body.table-mode #table-order-cta { display:block !important; }
+  </style>
+
   <button onclick="openModal('install-modal')" title="Instalar tarjeta" class="absolute top-4 left-4 z-20 text-white bg-black/40 p-2 rounded-full hover:bg-black/60 transition">
     <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M12 4v12m0 0l-4-4m4 4l4-4M4 20h16"/></svg>
   </button>
@@ -82,7 +93,7 @@
   </div>
 
   <!-- ============ ¿CÓMO DESEAS TU PEDIDO? ============ -->
-  <div class="px-6 pt-6 text-center">
+  <div id="order-type-section" class="px-6 pt-6 text-center">
     <div class="flex items-center gap-3">
       <div class="flex-1 h-px" style="background:var(--border);"></div>
       <h2 class="font-display font-bold text-lg">¿Cómo deseas tu pedido?</h2>
@@ -96,6 +107,7 @@
     <div id="promo-banner" class="hidden"></div>
   </div>
 
+  <div id="order-type-cards">
   <div class="grid grid-cols-2 gap-3 px-6 mt-3">
     <button onclick="startOrder('delivery')" class="rounded-2xl overflow-hidden text-center surface">
       <div id="home-delivery-content" class="p-4">
@@ -119,6 +131,17 @@
         <div class="text-4xl mb-1">🍽️</div>
         <div class="font-bold text-sm">Para Comer Aquí</div>
         <div class="text-[11px] mt-1 muted">Pide desde casa y te esperamos</div>
+      </div>
+    </button>
+  </div>
+  </div>
+
+  <div id="table-order-cta" class="hidden px-6 mt-3">
+    <button onclick="startOrder('mesa')" class="w-full rounded-2xl overflow-hidden text-center surface">
+      <div class="p-4">
+        <div class="text-4xl mb-1">🍽️</div>
+        <div class="font-bold text-sm">Hacer mi pedido</div>
+        <div class="text-[11px] mt-1 muted">Se enviará con tu ubicación (mesa o barra)</div>
       </div>
     </button>
   </div>
@@ -179,7 +202,7 @@
     <div id="cart-empty" class="text-center text-sm muted py-8">Tu carrito está vacío</div>
 
     <div id="cart-body" class="hidden">
-      <div class="grid grid-cols-2 gap-3 mb-4">
+      <div id="cart-delivery-type-picker" class="grid grid-cols-2 gap-3 mb-4">
         <button id="dt-delivery" onclick="selectDeliveryType('delivery')" class="rounded-2xl overflow-hidden text-center surface">
           <div id="cart-delivery-content" class="p-4">
             <div class="text-4xl mb-1">🛵</div>
@@ -202,6 +225,10 @@
           <div class="text-[11px] mt-1 muted">Pide desde casa y te esperamos</div>
         </div>
       </button>
+
+      <div id="cf-table-note" class="hidden mb-4 text-sm font-bold text-center rounded-2xl py-3 surface brand-text">
+        🪑 Pedido para la <span id="cf-table-label">Mesa</span> <span id="cf-table-number"></span>
+      </div>
 
       <button onclick="closeModal('cart-modal')" class="w-full text-sm font-bold brand-text border-2 brand-border rounded-2xl py-2.5 mb-4 flex items-center justify-center gap-2">← Seguir agregando productos</button>
 
@@ -245,17 +272,19 @@
         <input id="cf-name" type="text" placeholder="Ej. María Fernanda Rodríguez Gómez" class="w-full rounded-xl px-3 py-2 text-sm surface" style="color:var(--text);">
       </div>
 
-      <div class="mb-3">
+      <div id="cf-phone-wrap" class="mb-3">
         <label class="text-xs font-semibold muted block mb-1">Tu teléfono</label>
         <input id="cf-phone" type="tel" placeholder="Ej. 300 123 4567" class="w-full rounded-xl px-3 py-2 text-sm surface" style="color:var(--text);">
       </div>
 
-      <div class="text-xs font-semibold muted mb-1 uppercase tracking-wide">Métodos de pago</div>
-      <div id="cf-payment-grid" class="grid grid-cols-3 gap-2 mb-4"></div>
-      <div id="cf-payment-note" class="hidden text-xs rounded-xl p-3 leading-relaxed mb-3 surface muted"></div>
-      <div id="cf-cash-change-wrap" class="hidden mb-3">
-        <label class="text-xs font-semibold muted block mb-1">¿Con qué billete vas a pagar? (para saber cuánto vuelto llevar)</label>
-        <input id="cf-cash-change" type="text" placeholder="Ej. Pago con un billete de $50.000" class="w-full rounded-xl px-3 py-2 text-sm surface" style="color:var(--text);">
+      <div id="cf-payment-section">
+        <div class="text-xs font-semibold muted mb-1 uppercase tracking-wide">Métodos de pago</div>
+        <div id="cf-payment-grid" class="grid grid-cols-3 gap-2 mb-4"></div>
+        <div id="cf-payment-note" class="hidden text-xs rounded-xl p-3 leading-relaxed mb-3 surface muted"></div>
+        <div id="cf-cash-change-wrap" class="hidden mb-3">
+          <label class="text-xs font-semibold muted block mb-1">¿Con qué billete vas a pagar? (para saber cuánto vuelto llevar)</label>
+          <input id="cf-cash-change" type="text" placeholder="Ej. Pago con un billete de $50.000" class="w-full rounded-xl px-3 py-2 text-sm surface" style="color:var(--text);">
+        </div>
       </div>
 
       <div class="text-sm space-y-1 mb-4">
@@ -599,8 +628,19 @@ let cartNotes = {};
 let cartJalapeno = {};
 let cartSide = {};
 let cartGender = {};
+let cartTakeaway = {};
 let deliveryLocationUrl = '';
 let deliveryType = 'delivery';
+
+// ---------- Modo Mesa / Barra (pedidos desde QR) ----------
+// Si la URL trae ?mesa=1 (o mesa=2, 3...) o ?barra=1 el cliente llegó escaneando
+// el QR de ese puesto: saltamos la pantalla de selección, vamos directo al pedido,
+// se oculta el pago (se paga al llegar), y el identificador viaja siempre en el
+// mensaje de WhatsApp.
+const _qrParams = new URLSearchParams(window.location.search);
+const TABLE_NUMBER = _qrParams.get('mesa') || _qrParams.get('barra');
+const TABLE_LABEL = _qrParams.get('mesa') ? 'Mesa' : (_qrParams.get('barra') ? 'Barra' : 'Mesa');
+let tableModeStarted = false;
 let deliveryZone = null;
 let cloudDataLoaded = false;
 let selectedPaymentId = null;
@@ -650,6 +690,9 @@ function findItemCategory(id){
   return null;
 }
 // Productos que, por su tamaño, solo se sirven en mesa (no van en domicilio ni para retirar).
+function isEatHereMode(){
+  return deliveryType === 'dinein' || deliveryType === 'mesa';
+}
 function isDineInOnly(item){
   return /salchipapa d[uú]o|salchipapa familiar/i.test(item.name || '');
 }
@@ -774,6 +817,19 @@ function startOrder(type){
   openModal('menu-modal');
 }
 
+// Si venimos de un QR de mesa, forzamos el modo mesa y abrimos el menú directo,
+// sin pasar por la pantalla de "¿Cómo deseas tu pedido?".
+function initTableMode(){
+  if (!TABLE_NUMBER) return;
+  document.body.classList.add('table-mode');
+  const banner = document.getElementById('table-banner');
+  if (banner){
+    banner.textContent = `🪑 Pedido para la ${TABLE_LABEL} ${TABLE_NUMBER}`;
+    banner.classList.remove('hidden');
+  }
+  startOrder('mesa');
+}
+
 // ---------- Tarjetas de Domicilio / Para retirar / Para Comer Aquí ----------
 function renderDeliveryCards(){
   const dImg = CONFIG.deliveryCardImage;
@@ -853,7 +909,7 @@ function renderMenu(){
       const row = document.createElement('div');
       const soldOut = !!item.soldOut;
       const comingSoon = !!item.comingSoon;
-      const dineInLocked = isDineInOnly(item) && deliveryType !== 'dinein';
+      const dineInLocked = isDineInOnly(item) && !isEatHereMode();
       row.className = 'flex gap-3 rounded-2xl p-3 mb-2 surface' + (soldOut || comingSoon || dineInLocked ? ' opacity-60' : '');
       const thumb = item.image
         ? `<img src="${esc(item.image)}" class="w-16 h-16 rounded-xl object-cover flex-shrink-0" alt="${esc(item.name)}">`
@@ -877,6 +933,7 @@ function renderMenu(){
           <div id="mjalapeno-${item.id}"></div>
           <div id="mside-${item.id}"></div>
           <div id="mgender-${item.id}"></div>
+          <div id="mtakeaway-${item.id}"></div>
           ${cat.name === 'Bebidas Frías' ? '' : `<div id="mnote-${item.id}"></div>`}
         </div>
       `;
@@ -905,7 +962,7 @@ function renderControl(id){
     el.innerHTML = `<span class="text-[11px] font-bold text-sky-400 uppercase tracking-wide">Próximamente</span>`;
     return;
   }
-  if (item && isDineInOnly(item) && deliveryType !== 'dinein'){
+  if (item && isDineInOnly(item) && !isEatHereMode()){
     el.innerHTML = `<span class="text-[11px] font-bold text-purple-400 uppercase tracking-wide">Solo para comer aquí</span>`;
     return;
   }
@@ -923,7 +980,26 @@ function renderControl(id){
   renderJalapenoOption(id, qty);
   renderSideOption(id, qty);
   renderGenderOption(id, qty);
+  renderTakeawayOption(id, qty);
   renderMenuNote(id, qty);
+}
+
+// Solo aplica en modo Mesa/Barra (pedidos desde QR): por defecto todo es "para
+// comer aquí"; el cliente solo lo cambia si ESE producto puntual es para llevar.
+function renderTakeawayOption(id, qty){
+  const el = document.getElementById('mtakeaway-'+id);
+  if (!el) return;
+  if (deliveryType !== 'mesa' || qty === 0){ el.innerHTML = ''; return; }
+  if (!cartTakeaway[id]) cartTakeaway[id] = 'aqui';
+  const opts = [['aqui','🍽️ Comer aquí'], ['llevar','🥡 Para llevar']];
+  el.innerHTML = `
+    <div class="flex gap-1.5 mt-2">
+      ${opts.map(([val,label]) => `<button onclick="setTakeaway('${id}','${val}')" class="flex-1 text-[11px] font-semibold px-2 py-1.5 rounded-lg ${cartTakeaway[id]===val ? 'brand-bg text-white' : 'surface muted'}">${label}</button>`).join('')}
+    </div>`;
+}
+function setTakeaway(id, val){
+  cartTakeaway[id] = val;
+  renderTakeawayOption(id, cart[id]||0);
 }
 
 function renderJalapenoOption(id, qty){
@@ -1010,7 +1086,7 @@ function renderMenuNote(id, qty){
 function addItem(id){
   const item = findItem(id);
   if (item && (item.soldOut || item.comingSoon)) return;
-  if (item && isDineInOnly(item) && deliveryType !== 'dinein') return;
+  if (item && isDineInOnly(item) && !isEatHereMode()) return;
   cart[id] = (cart[id]||0) + 1;
   renderControl(id);
   updateCartBar();
@@ -1018,11 +1094,11 @@ function addItem(id){
 function removeItem(id){
   if (!cart[id]) return;
   cart[id] -= 1;
-  if (cart[id] <= 0){ delete cart[id]; delete cartNotes[id]; delete cartJalapeno[id]; delete cartSide[id]; delete cartGender[id]; }
+  if (cart[id] <= 0){ delete cart[id]; delete cartNotes[id]; delete cartJalapeno[id]; delete cartSide[id]; delete cartGender[id]; delete cartTakeaway[id]; }
   renderControl(id);
   updateCartBar();
 }
-function trashCartItem(id){ delete cart[id]; delete cartNotes[id]; delete cartJalapeno[id]; delete cartSide[id]; delete cartGender[id]; renderControl(id); updateCartBar(); renderCart(); }
+function trashCartItem(id){ delete cart[id]; delete cartNotes[id]; delete cartJalapeno[id]; delete cartSide[id]; delete cartGender[id]; delete cartTakeaway[id]; renderControl(id); updateCartBar(); renderCart(); }
 function updateCartNote(id, value){ cartNotes[id] = value; }
 function cartCount(){ return Object.values(cart).reduce((a,b)=>a+b,0); }
 function cartSubtotal(){ return Object.entries(cart).reduce((s,[id,qty]) => { const it = findItem(id); return it ? s + it.price*qty : s; }, 0); }
@@ -1048,6 +1124,17 @@ function openCartModal(){
   renderCart();
 }
 function applyDeliveryUI(){
+  const isTable = deliveryType === 'mesa';
+  document.getElementById('cart-delivery-type-picker').style.display = isTable ? 'none' : 'grid';
+  document.getElementById('dt-dinein').style.display = isTable ? 'none' : 'block';
+  document.getElementById('cf-table-note').classList.toggle('hidden', !isTable);
+  if (isTable){
+    document.getElementById('cf-table-number').textContent = TABLE_NUMBER;
+    document.getElementById('cf-table-label').textContent = TABLE_LABEL;
+  }
+  document.getElementById('cf-phone-wrap').style.display = isTable ? 'none' : 'block';
+  document.getElementById('cf-payment-section').style.display = isTable ? 'none' : 'block';
+
   document.getElementById('dt-delivery').classList.toggle('dt-active', deliveryType==='delivery');
   document.getElementById('dt-pickup').classList.toggle('dt-active', deliveryType==='pickup');
   document.getElementById('dt-dinein').classList.toggle('dt-active', deliveryType==='dinein');
@@ -1072,11 +1159,11 @@ function selectDeliveryZone(zone){
 }
 function selectDeliveryType(type){
   deliveryType = type;
-  if (deliveryType !== 'dinein'){
+  if (!isEatHereMode()){
     Object.keys(cart).forEach(id => {
       const item = findItem(id);
       if (item && isDineInOnly(item)){
-        delete cart[id]; delete cartNotes[id]; delete cartJalapeno[id]; delete cartSide[id]; delete cartGender[id];
+        delete cart[id]; delete cartNotes[id]; delete cartJalapeno[id]; delete cartSide[id]; delete cartGender[id]; delete cartTakeaway[id];
       }
     });
   }
@@ -1177,6 +1264,7 @@ function renderCart(){
     const jalapeno = item.hasJalapeno ? jalapenoLabel(cartJalapeno[id]) : '';
     const side = item.hasSideChoice ? sideLabel(cartSide[id]) : '';
     const gender = item.hasGenderChoice ? genderLabel(cartGender[id]) : '';
+    const takeaway = (deliveryType === 'mesa' && cartTakeaway[id] === 'llevar') ? '🥡 Para llevar' : '';
     return `<div class="py-2" style="border-bottom:1px solid var(--border);">
       <div class="flex items-center justify-between text-sm">
         <div class="min-w-0">
@@ -1185,6 +1273,7 @@ function renderCart(){
           ${jalapeno ? `<div class="text-xs mt-1 brand-text">🌶️ ${esc(jalapeno)}</div>` : ''}
           ${side ? `<div class="text-xs mt-1 brand-text">🍟 ${esc(side)}</div>` : ''}
           ${gender ? `<div class="text-xs mt-1 brand-text">🧒 ${esc(gender)}</div>` : ''}
+          ${takeaway ? `<div class="text-xs mt-1 brand-text">${takeaway}</div>` : ''}
           ${note ? `<div class="text-xs mt-1 brand-text">✏️ ${esc(note)}</div>` : ''}
         </div>
         <div class="flex items-center gap-3 flex-shrink-0">
@@ -1199,7 +1288,7 @@ function renderCart(){
   updatePaymentNote();
 }
 function packagingEligibleCount(){
-  if (deliveryType === 'dinein') return 0;
+  if (isEatHereMode()) return 0;
   return Object.entries(cart).reduce((sum, [id, qty]) => {
     const item = findItem(id);
     if (!item || !itemNeedsPackaging(item, findItemCategory(id))) return sum;
@@ -1254,11 +1343,11 @@ async function sendOrderToWhatsApp(){
   const method = findPaymentMethod(selectedPaymentId);
 
   if (!name){ alert('Por favor ingresa tu nombre.'); return; }
-  if (!phone){ alert('Por favor ingresa tu teléfono.'); return; }
+  if (deliveryType !== 'mesa' && !phone){ alert('Por favor ingresa tu teléfono.'); return; }
   if (deliveryType === 'delivery' && !address){ alert('Por favor ingresa la dirección de entrega.'); return; }
   if (deliveryType === 'delivery' && !deliveryZone){ alert('Por favor selecciona la zona de entrega: zona rural o zona urbana.'); return; }
   if (deliveryType === 'dinein' && !dineInTime){ alert('Por favor selecciona a qué hora quieres que esté lista tu comida.'); return; }
-  if (method && method.isCash && !cashChange){ alert('Por favor indica con qué billete vas a pagar, para saber cuánto vuelto llevar.'); return; }
+  if (deliveryType !== 'mesa' && method && method.isCash && !cashChange){ alert('Por favor indica con qué billete vas a pagar, para saber cuánto vuelto llevar.'); return; }
 
   // Abrimos la pestaña YA (todavía dentro del clic del usuario), antes de cualquier
   // espera async — si esperamos a que termine la consulta a la nube para abrirla,
@@ -1282,6 +1371,7 @@ async function sendOrderToWhatsApp(){
   const fee = currentDeliveryFee();
   const total = subtotal + packaging + fee;
   const divider = '━━━━━━━━━━━━━━';
+  let anyTakeaway = false;
   const itemLines = entries.map(([id,qty]) => {
     const item = findItem(id);
     if (!item) return '';
@@ -1289,10 +1379,13 @@ async function sendOrderToWhatsApp(){
     const jalapeno = item.hasJalapeno ? jalapenoLabel(cartJalapeno[id]) : '';
     const side = item.hasSideChoice ? sideLabel(cartSide[id]) : '';
     const gender = item.hasGenderChoice ? genderLabel(cartGender[id]) : '';
+    const isTakeaway = deliveryType === 'mesa' && cartTakeaway[id] === 'llevar';
+    if (isTakeaway) anyTakeaway = true;
     let line = `• ${qty} × ${item.name} — ${fmt(item.price*qty)}`;
     if (jalapeno) line += `\n   Picante: ${jalapeno}`;
     if (side) line += `\n   Acompañamiento: ${side}`;
     if (gender) line += `\n   Juguete sorpresa para: ${gender}`;
+    if (isTakeaway) line += `\n   🥡 PARA LLEVAR`;
     if (note) line += `\n   Nota: ${note}`;
     return line;
   }).filter(Boolean).join('\n');
@@ -1316,6 +1409,13 @@ async function sendOrderToWhatsApp(){
     msg += `${divider}\n\n`;
     msg += `${paymentLines}\n`;
     msg += `📞 Teléfono:\n${phone}`;
+  } else if (deliveryType === 'mesa'){
+    msg = `🪑 NUEVO PEDIDO — ${TABLE_LABEL.toUpperCase()} ${TABLE_NUMBER} ${orderTag}\n\n`;
+    msg += `👤 Cliente: ${name}\n`;
+    msg += `\n🍔 Pedido\n${itemLines}\n`;
+    msg += `\n💰 Total: ${fmt(total)}\n\n`;
+    msg += anyTakeaway ? `⚠️ Incluye productos PARA LLEVAR (marcados arriba), el resto es para comer en el lugar.\n` : `🍽️ Todo el pedido es para comer aquí.\n`;
+    msg += `🪑 ${TABLE_LABEL}: ${TABLE_NUMBER}`;
   } else if (deliveryType === 'dinein'){
     msg = `🍽️ NUEVO PEDIDO PARA COMER AQUÍ ${orderTag}\n\n`;
     msg += `👤 Cliente: ${name}\n`;
@@ -1348,6 +1448,7 @@ async function sendOrderToWhatsApp(){
   cartJalapeno = {};
   cartSide = {};
   cartGender = {};
+  cartTakeaway = {};
   deliveryLocationUrl = '';
   deliveryZone = null;
   document.getElementById('cart-body').classList.add('hidden');
@@ -1373,13 +1474,19 @@ function sendFeedback(){
 }
 
 // ---------- Compartir / QR ----------
+// Siempre usamos el link BASE (sin ?mesa=...), aunque estemos viendo la página
+// desde el QR de una mesa — así "Compartir"/"Copiar link" nunca contagia el
+// modo mesa al link general del negocio.
+function baseSiteLink(){
+  return window.location.origin + window.location.pathname;
+}
 function openShareModal(){
-  const link = window.location.href;
+  const link = baseSiteLink();
   document.getElementById('qr-img').src = 'https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=' + encodeURIComponent(link);
   openModal('share-modal');
 }
 function copyLink(){
-  navigator.clipboard.writeText(window.location.href).then(()=> alert('Link copiado'));
+  navigator.clipboard.writeText(baseSiteLink()).then(()=> alert('Link copiado'));
 }
 
 // ---------- Guardar contacto (vCard) ----------
@@ -1481,6 +1588,7 @@ function admFactoryReset(){
   cartJalapeno = {};
   cartSide = {};
   cartGender = {};
+  cartTakeaway = {};
   closeModal('admin-modal');
   renderAll();
 }
@@ -1771,6 +1879,7 @@ async function saveAdmin(){
   cartJalapeno = {};
   cartSide = {};
   cartGender = {};
+  cartTakeaway = {};
   renderAll();
 
   if (firebaseEnabled){
@@ -1800,13 +1909,16 @@ if (firebaseEnabled){
       if (data.menu) MENU = normalizeMenu(data.menu);
     }
     renderAll();
+    if (!tableModeStarted){ tableModeStarted = true; initTableMode(); }
   }, err => {
     console.error('Firebase onSnapshot error', err);
     cloudDataLoaded = true;
     renderAll();
+    if (!tableModeStarted){ tableModeStarted = true; initTableMode(); }
   });
 } else {
   renderAll();
+  initTableMode();
 }
 </script>
 
